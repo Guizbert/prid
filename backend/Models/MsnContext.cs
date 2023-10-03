@@ -29,6 +29,11 @@ public class MsnContext : DbContext
                 .IsUnique();
 
 
+                //photo .isunique()
+
+                
+
+
             //si lastName || FirstName != null alors faut faire la validation
 
             modelBuilder.Entity<User>().HasData(

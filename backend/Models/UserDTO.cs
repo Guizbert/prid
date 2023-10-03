@@ -9,11 +9,8 @@ public class UserDTO
 
     public string Email {get; set;} = null!;
 
-    public string? LastName{get; set;} = "";
-
-    public string? FirstName{get; set;} = "";
-
-
+    public string? LastName{get; set;} 
+    public string? FirstName{get; set;}
     public DateTimeOffset? BirthDate { get; set; }
 
 }
@@ -21,5 +18,5 @@ public class UserDTO
 
 public class UserWithPasswordDTO : UserDTO
 {
-    public string Password {get; set;} = "";
+    public string Password {get; set;} = ""; // peut mettre null! car on part du principe que ca peut etre vide
 }

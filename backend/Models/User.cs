@@ -12,7 +12,7 @@ public class User
 
     public string Pseudo {get; set;}= null!;
 
-    public string Password {get; set;}= null!;
+    public string Password {get; set;}= null!; // force a avoir une erreur si c'est vide
 
     public string Email {get; set;} = null!;
     //null! pour dire qu'il est non nullable 
