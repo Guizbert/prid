@@ -1,13 +1,20 @@
 using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using prid_2324_a12.Models;
+using System.IdentityModel.Tokens.Jwt;
+using System.Text;
+using Microsoft.IdentityModel.Tokens;
+using System.Security.Claims;
+using prid_2324_a12.Helpers;
 
 namespace prid_2324_a12.Controllers;
 
 
 [Route("api/[controller]")]
 [ApiController]
+[Authorize]
 public class UsersController : ControllerBase
 {
     private readonly MsnContext _context;
@@ -138,6 +145,45 @@ public class UsersController : ControllerBase
         await _context.SaveChangesAsync();
         // Retourne un statut 204 avec une réponse vide
         return NoContent();
+    }
+
+    [AllowAnonymous]
+    [HttpPost("authenticate")]
+    public async Task<ActionResult<UserDTO>> Authenticate(UserLoginDTO dto) {
+        var user = await Authenticate(dto.Pseudo, dto.Password);
+
+        var result = await new UserValidator(_context).ValidateForAuthenticate(user);
+        if (!result.IsValid)
+            return BadRequest(result);
+
+        return Ok(_mapper.Map<UserDTO>(user));
+    }
+
+    private async Task<User?> Authenticate(string pseudo, string password) {
+        var user = await _context.Users.SingleOrDefaultAsync(u => u.Pseudo == pseudo);
+
+        // return null if member not found
+        if (user == null)
+            return null;
+
+        if (user.Password == password) {
+            // authentication successful so generate jwt token
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var key = Encoding.ASCII.GetBytes("my-super-secret-key");
+            var tokenDescriptor = new SecurityTokenDescriptor {
+                Subject = new ClaimsIdentity(new Claim[] {
+                        new Claim(ClaimTypes.Name, user.Pseudo),
+                        new Claim(ClaimTypes.Role, user.Role.ToString())
+                    }),
+                IssuedAt = DateTime.UtcNow,
+                Expires = DateTime.UtcNow.AddMinutes(10),
+                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
+            };
+            var token = tokenHandler.CreateToken(tokenDescriptor);
+            user.Token = tokenHandler.WriteToken(token);
+        }
+
+        return user;
     }
 
 }

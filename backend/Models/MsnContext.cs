@@ -42,7 +42,8 @@ public class MsnContext : DbContext
                         new User { Id=3,Pseudo = "alain", Password = "alain", Email="alain.epfc@eu" },
                         new User { Id=4, Pseudo = "xavier", Password = "xavier", Email="xavier.epfc@eu" },
                         new User { Id=5, Pseudo = "boris", Password = "boris", Email="boris.epfc@eu" },
-                        new User { Id=6, Pseudo = "marc", Password = "marc", Email="marc.epfc@eu"}
+                        new User { Id=6, Pseudo = "marc", Password = "marc", Email="marc.epfc@eu"},
+                        new User { Id=7, Pseudo = "admin", Password = "admin", Email="admin.epfc@eu", Role= Role.Teacher}
                     );
 
             

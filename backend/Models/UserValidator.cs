@@ -1,6 +1,7 @@
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using System.Text.RegularExpressions;
+using prid_2324_a12.Helpers;
 
 namespace prid_2324_a12.Models;
 
@@ -97,6 +98,11 @@ public class UserValidator : AbstractValidator<User>
                     .MustAsync((m, cancellation) =>  BeUniquePseudo(m.Id,m.Pseudo, cancellation))
                     .WithMessage("'{PropertyName}' must be unique.");
             });
+
+            RuleSet("authenticate", () => {
+                RuleFor(m => m.Token)
+                    .NotNull().OverridePropertyName("Password").WithMessage("Incorrect password");
+            });
     }
     //passe l'id pour la modification du user si il existe deja!
     private async Task<bool> BeUniquePseudo(int id, string pseudo, CancellationToken token) 
@@ -126,6 +132,16 @@ public class UserValidator : AbstractValidator<User>
     public async Task<FluentValidation.Results.ValidationResult> ValidateOnCreate(User user) 
     {
         return await this.ValidateAsync(user, o => o.IncludeRuleSets("default", "create"));
+    }
+
+    public async Task<FluentValidation.Results.ValidationResult> ValidateForAuthenticate(User? user) {
+        if (user == null)
+            return ValidatorHelper.CustomError("User not found.", "Pseudo");
+        return await this.ValidateAsync(user!, o => o.IncludeRuleSets("authenticate"));
+    }
+
+    private async Task<bool> BeUniquePseudo(string pseudo, CancellationToken token) {
+        return !await _context.Users.AnyAsync(m => m.Pseudo == pseudo);
     }
 
    

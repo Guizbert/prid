@@ -11,8 +11,16 @@ public class UserDTO
 
     public string? LastName{get; set;} 
     public string? FirstName{get; set;}
-    public DateTimeOffset? BirthDate { get; set; }
+    public DateTimeOffset? BirthDate { get; set; }    
+    public Role Role { get; set; }
+    public string? Token { get; set; }
 
+}
+
+public class UserLoginDTO
+{
+    public string Pseudo {get; set;} = null!;
+    public string Password {get; set;} = "";
 }
 
 

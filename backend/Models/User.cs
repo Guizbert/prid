@@ -1,9 +1,14 @@
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace prid_2324_a12.Models;
 
-public class User
+public enum Role
+{
+    Student = 2,Teacher = 1, Admin =0
+}
 
+public class User
 {
     [Key]
     public int Id { get; set;} 
@@ -23,6 +28,11 @@ public class User
 
     public DateTimeOffset? BirthDate { get; set; }
 
+    [NotMapped]
+    public string? Token { get; set; }
+    public Role Role { get; set; } = Role.Student;
+
+    
     public int? Age{
         get{
             if(!BirthDate.HasValue)
