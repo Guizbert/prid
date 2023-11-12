@@ -14,6 +14,8 @@ public class MsnContext : DbContext
         protected override void OnModelCreating(ModelBuilder modelBuilder){
             base.OnModelCreating(modelBuilder);
 
+
+            /***** USER *****/
             modelBuilder.Entity<User>()
                 .Property(u => u.Id)
                 .ValueGeneratedOnAdd();
@@ -21,18 +23,103 @@ public class MsnContext : DbContext
 
 
             modelBuilder.Entity<User>()
+                .HasIndex(m => m.Id)
+                .IsUnique();
+            modelBuilder.Entity<User>()
                 .HasIndex(m => m.Pseudo)
                 .IsUnique();
-
             modelBuilder.Entity<User>()
                 .HasIndex(m => m.Email)
                 .IsUnique();
 
+            modelBuilder.Entity<Teacher>()
+                .HasBaseType<User>();
 
-                //photo .isunique()
+            modelBuilder.Entity<Student>()
+                .HasBaseType<User>();
 
+            modelBuilder.Entity<User>()
+                .HasMany(u => u.Attempts)
+                .WithOne(u => u.User)
+                .OnDelete(DeleteBehavior.ClientCascade);
+
+
+            /***** ATTEMPT *****/
+
+            modelBuilder.Entity<Attempt>()
+                .Property(a => a.Id)
+                .ValueGeneratedOnAdd();
+
+            modelBuilder.Entity<Attempt>()
+                .HasIndex(a => a.Id)
+                .IsUnique();
+
+            modelBuilder.Entity<Attempt>()
+                .HasOne(a => a.User);
+
+            /***** ANSWER *****/
+
+            modelBuilder.Entity<Answer>()
+                .Property(a => a.Id)
+                .ValueGeneratedOnAdd();
+
+            modelBuilder.Entity<Answer>()
+                .HasIndex(a => a.Id)
+                .IsUnique();
+
+            modelBuilder.Entity<Answer>()
+                .HasOne(a => a.Attempt);
+            // modelBuilder.Entity<Answer>()
+
+
+            /***** QUIZZ *****/
+            modelBuilder.Entity<Quiz>()
+                .Property(q => q.Id)
+                .ValueGeneratedOnAdd();
                 
+            modelBuilder.Entity<Quiz>()
+                .HasIndex(q => q.Id)
+                .IsUnique();
+            
+            // modelBuilder.Entity<Quiz>()
+            //     .HasOne(q => q.Database);
+            
+            modelBuilder.Entity<Quiz>()
+                .HasMany(q => q.Questions)
+                .WithOne(questions => questions.Quiz)
+                .HasForeignKey(questions => questions.QuizId)
+                .OnDelete(DeleteBehavior.ClientCascade);
 
+            modelBuilder.Entity<Quiz>()
+                .HasMany(q => q.Attempts)
+                .WithOne(a => a.Quiz)
+                .OnDelete(DeleteBehavior.ClientCascade);
+
+            /***** QUESTION *****/
+            modelBuilder.Entity<Question>()
+                .Property(q => q.Id)
+                .ValueGeneratedOnAdd();
+
+            modelBuilder.Entity<Question>()
+                .HasIndex(q => q.Id)
+                .IsUnique();
+
+            modelBuilder.Entity<Question>()
+                .HasMany(q => q.Solutions)
+                .WithOne(s => s.Question)
+                .HasForeignKey(s => s.QuestionId)
+                .OnDelete(DeleteBehavior.ClientCascade);
+
+            /***** SOLUTION *****/
+
+            modelBuilder.Entity<Solution>()
+                .Property(s => s.Id)
+                .ValueGeneratedOnAdd();
+            modelBuilder.Entity<Solution>()
+                .HasIndex(s => s.Id)
+                .IsUnique();
+            modelBuilder.Entity<Solution>()
+                .HasOne(s => s.Question);
 
             //si lastName || FirstName != null alors faut faire la validation
 
@@ -46,9 +133,18 @@ public class MsnContext : DbContext
                         new User { Id=7, Pseudo = "admin", Password = "admin", Email="admin.epfc@eu", Role= Role.Teacher}
                     );
 
+            // modelBuilder.Entity<Answer>().HasData(
+            //     new Answer();
+            // )
+
             
         }
 
         public DbSet<User> Users => Set<User>();
-
+        public DbSet<Answer> Answers => Set<Answer>();
+        public DbSet<Attempt> Attempts => Set<Attempt>();
+        public DbSet<Database> Databases => Set<Database>();
+        public DbSet<Question> Questions => Set<Question>();
+        public DbSet<Quiz> Quizzes => Set<Quiz>();
+        public DbSet<Solution> Solutions => Set<Solution>();
 }

@@ -43,4 +43,8 @@ public class User
                 return age;
         }
     }
+
+    public ICollection<Attempt> Attempts = new HashSet<Attempt>();
+    
+    public bool isTeacher() {return this.Role == Role.Teacher;}
 }
