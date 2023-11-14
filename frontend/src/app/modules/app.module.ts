@@ -14,6 +14,11 @@ import { RestrictedComponent } from '../component/restricted/restricted.componen
 import { UnknownComponent } from '../component/unknown/unknown.component';
 import { JwtInterceptor } from '../interceptors/jwt.interceptor';
 import { LoginComponent } from '../component/login/login.component';
+import { SignUpComponent } from '../component/signup/signup.component';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { SharedModule } from './shared.module';
+import { MAT_DATE_FORMATS, MAT_DATE_LOCALE } from '@angular/material/core';
+import { fr } from 'date-fns/locale';
 
 @NgModule({
     declarations: [
@@ -24,6 +29,7 @@ import { LoginComponent } from '../component/login/login.component';
         FetchDataComponent,
         UserListComponent,
         LoginComponent,
+        SignUpComponent,
         UnknownComponent,
         RestrictedComponent
     ],
@@ -32,11 +38,28 @@ import { LoginComponent } from '../component/login/login.component';
         HttpClientModule,
         FormsModule,
         ReactiveFormsModule,
-        AppRoutes
+        AppRoutes,
+        BrowserAnimationsModule,
+        SharedModule
     ],
     providers: [
-        { provide: HTTP_INTERCEPTORS, useClass: JwtInterceptor, multi: true }
-    ],
+        { provide: HTTP_INTERCEPTORS, useClass: JwtInterceptor, multi: true },
+        { provide: MAT_DATE_LOCALE, useValue: fr },
+        {
+          provide: MAT_DATE_FORMATS,
+          useValue: {
+            parse: {
+              dateInput: ['dd/MM/yyyy'],
+            },
+            display: {
+              dateInput: 'dd/MM/yyyy',
+              monthYearLabel: 'MMM yyyy',
+              dateA11yLabel: 'dd/MM/yyyy',
+              monthYearA11yLabel: 'MMM yyyy',
+            },
+          },
+        },
+      ],
     bootstrap: [AppComponent]
 })
 export class AppModule { }

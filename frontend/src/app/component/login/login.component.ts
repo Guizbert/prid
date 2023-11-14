@@ -10,7 +10,7 @@ export class LoginComponent implements OnInit, AfterViewInit {
     loading = false;    // utilisé en HTML pour désactiver le bouton pendant la requête de login
     submitted = false;  // retient si le formulaire a été soumis ; utilisé pour n'afficher les 
     // erreurs que dans ce cas-là (voir template)
-    returnUrl?: string;
+    returnUrl?: string; 
     error = '';
     @ViewChild('pseudo') pseudo!: ElementRef;
 

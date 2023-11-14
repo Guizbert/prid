@@ -5,6 +5,7 @@ import { FetchDataComponent } from '../component/fetch-data/fetch-data.component
 import { UserListComponent } from '../component/userlist/userlist.component';
 import { RestrictedComponent } from '../component/restricted/restricted.component';
 import { LoginComponent } from '../component/login/login.component';
+import { SignUpComponent } from '../component/signup/signup.component';
 import { UnknownComponent } from '../component/unknown/unknown.component';
 import { AuthGuard } from '../services/auth.guard';
 import { Role } from '../models/user';
@@ -22,6 +23,10 @@ const appRoutes: Routes = [
     {
         path: 'login',
         component: LoginComponent
+    },
+    {
+        path: 'signup',
+        component: SignUpComponent
     },
     { path: 'restricted', component: RestrictedComponent },
     { path: '**', component: UnknownComponent }

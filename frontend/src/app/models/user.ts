@@ -18,7 +18,6 @@ export class User {
     role: Role = Role.Student;
     token?: string;
 
-
     public get roleAsString(): string {
         return Role[this.role];
     }
