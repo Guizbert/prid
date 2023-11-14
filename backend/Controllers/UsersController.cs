@@ -30,6 +30,9 @@ public class UsersController : ControllerBase
         _mapper = mapper;
     }
 
+    //[Authorized(Role.Teacher)] 
+    // que les teacher aurant droit a cette fonction (pourra servir pour récup les étudiants et leurs réponses)
+    [AllowAnonymous]
     [HttpGet]
     public async Task<ActionResult<IEnumerable<UserDTO>>> GetAll() {
 
@@ -78,6 +81,23 @@ public class UsersController : ControllerBase
         return _mapper.Map<UserDTO>(user);
     }
 
+    /* === SIGNUP === */
+
+    [AllowAnonymous]
+    [HttpPost("signup")]
+    public async Task<ActionResult<UserDTO>> Signup(UserWithPasswordDTO user){
+        return await PostUser(user);
+    }
+
+    [AllowAnonymous]
+    [HttpGet("available/{pseudo}")]
+    public async Task<ActionResult<bool>> IsAvailable(string pseudo) {
+        bool isPseudoAvailable = await _context.Users.AnyAsync(user => user.Pseudo == pseudo);
+        return !isPseudoAvailable;
+    }
+
+
+    [AllowAnonymous]
     [HttpGet("byPseudo/{pseudo}")]
     public async Task<ActionResult<UserDTO>> GetByPseudo(string pseudo) {
         var user = await _context.Users.SingleOrDefaultAsync(m => m.Pseudo == pseudo); // en cherche un seul 
