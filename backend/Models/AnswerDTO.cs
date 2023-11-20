@@ -5,5 +5,4 @@ public class AnswerDTO{
     public string Sql {get; set;} = null!;
     public DateTimeOffset? TimeStamp {get; set;}
     public bool IsCorrect {get; set;}
-    public Attempt Attempt{get;set;} = null!;
 }

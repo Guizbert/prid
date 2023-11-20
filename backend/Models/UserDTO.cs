@@ -12,9 +12,10 @@ public class UserDTO
     public string? LastName{get; set;} 
     public string? FirstName{get; set;}
     public DateTimeOffset? BirthDate { get; set; }    
-    public Role Role { get; set; }
+    public Role Role { get; set; } = Role.Student;
     public string? Token { get; set; }
-
+    public ICollection<Quiz> Quizzes { get; set; } = new HashSet<Quiz>();
+    public ICollection<Attempt> Attempts { get; set; } = new HashSet<Attempt>();
 }
 
 public class UserLoginDTO

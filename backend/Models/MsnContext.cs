@@ -124,18 +124,29 @@ public class MsnContext : DbContext
             //si lastName || FirstName != null alors faut faire la validation
 
             modelBuilder.Entity<User>().HasData(
-                        new User { Id=1, Pseudo = "ben", Password = "ben" , Email="ben.epfc@eu"},
-                        new User { Id=2, Pseudo = "bruno", Password = "bruno", Email="bruno.epfc@eu" },
-                        new User { Id=3,Pseudo = "alain", Password = "alain", Email="alain.epfc@eu" },
-                        new User { Id=4, Pseudo = "xavier", Password = "xavier", Email="xavier.epfc@eu" },
-                        new User { Id=5, Pseudo = "boris", Password = "boris", Email="boris.epfc@eu" },
-                        new User { Id=6, Pseudo = "marc", Password = "marc", Email="marc.epfc@eu"},
-                        new User { Id=7, Pseudo = "admin", Password = "admin", Email="admin.epfc@eu", Role= Role.Teacher}
-                    );
+                new User { Id=1, Pseudo = "ben", Password = "ben" , Email="ben.epfc@eu"},
+                new User { Id=2, Pseudo = "bruno", Password = "bruno", Email="bruno.epfc@eu" },
+                new User { Id=3,Pseudo = "alain", Password = "alain", Email="alain.epfc@eu" },
+                new User { Id=4, Pseudo = "xavier", Password = "xavier", Email="xavier.epfc@eu" },
+                new User { Id=5, Pseudo = "boris", Password = "boris", Email="boris.epfc@eu" },
+                new User { Id=6, Pseudo = "marc", Password = "marc", Email="marc.epfc@eu"},
+                new User { Id=7, Pseudo = "admin", Password = "admin", Email="admin.epfc@eu", Role= Role.Teacher},
+                new User { Id=8, Pseudo = "albé", Password = "alberich", Email="albe.epfc@eu", Role= Role.Student},
+                new User { Id=9, Pseudo = "vlad", Password = "admin", Email="vlad.epfc@eu", Role= Role.Student},
+                new User { Id=10, Pseudo = "kenji", Password = "admin", Email="kenji.epfc@eu", Role= Role.Student}
 
+            );
+            modelBuilder.Entity<Quiz>().HasData(
+                new Quiz { Id=1, Name="TP1", IsPublished=true,  IsClosed=false, IsTest=true, Database="fournisseurs"},
+                new Quiz { Id=2, Name="TP2", IsPublished=true, IsClosed=false, IsTest=true, Database="fournisseurs"},
+                new Quiz { Id=3, Name="TP3", IsPublished=true, IsClosed=false, IsTest=true, Database="facebook"},
+                new Quiz { Id=4, Name="TEST 1", IsPublished=true,Start= new DateTime(2023, 10, 21), Finish =new DateTime(2023, 10, 22), IsClosed=true, IsTest=false, Database="fournisseurs"},
+                new Quiz { Id=5, Name="TEST 2", IsPublished=true,Start= new DateTime(2023, 10, 22), Finish =new DateTime(2023, 10, 24), IsClosed=true, IsTest=false, Database="fournisseurs"}
+            );
             // modelBuilder.Entity<Answer>().HasData(
             //     new Answer();
             // )
+            
 
             
         }
@@ -147,4 +158,6 @@ public class MsnContext : DbContext
         public DbSet<Question> Questions => Set<Question>();
         public DbSet<Quiz> Quizzes => Set<Quiz>();
         public DbSet<Solution> Solutions => Set<Solution>();
+
+        
 }

@@ -5,7 +5,8 @@ public class QuizDTO{
     public string Name{get;set;}= null!;
     public string? Description {get;set;}
     public bool IsPublished {get;set;}
-    public bool IsClosed {get;set;}
+    public bool IsClosed {get;set;}    
+    public bool IsTest {get; set;}
     public DateTimeOffset? Start {get;set;}
     public DateTimeOffset? Finish {get;set;}
 

@@ -7,5 +7,4 @@ public class AttemptDTO
     public DateTimeOffset? Start { get; set;}
     public DateTimeOffset? Finish {get; set;}
     public User user{get;set;} = null!;
-    public QuizDTO quiz{get;set;}= null!;
 }

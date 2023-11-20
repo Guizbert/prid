@@ -5,5 +5,4 @@ public class QuestionDTO{
     public int Order{get;set;}
     public string Body{get;set;}= null!;
     
-    public ICollection<SolutionDTO> Solutions {get;set;} = new HashSet<SolutionDTO>();
 }
