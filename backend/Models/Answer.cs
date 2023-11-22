@@ -14,4 +14,7 @@ public class Answer {
     [ForeignKey(nameof(AttemptId))]
     public Attempt Attempt{get;set;}= null!;
     public int AttemptId{get;set;}
+    [ForeignKey(nameof(QuestionId))]
+    public Question Question {get;set;}
+    public int QuestionId{get;set;}
 }
