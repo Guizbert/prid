@@ -22,7 +22,7 @@ export class LoginComponent implements OnInit, AfterViewInit {
     ) {
         // redirect to home if already logged in
         if (this.authenticationService.currentUser) {
-            this.router.navigate(['/']);
+            this.router.navigate(['/quiz']);
         }
     }
 
@@ -34,7 +34,7 @@ export class LoginComponent implements OnInit, AfterViewInit {
         });
 
         // get return url from route parameters or default to '/'
-        this.returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/';
+        this.returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/quiz';
     }
 
    

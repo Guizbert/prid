@@ -3,3 +3,9 @@ form {
     display: grid;
     grid-row-gap: 10px;
 }
+
+.btn {
+    background-color: #007bff; /* Maintient la même couleur de fond même lorsqu'il est désactivé */
+    color: #fff; /* Maintient la même couleur de texte même lorsqu'il est désactivé */
+    opacity: 0.7; /* Ajuste l'opacité pour indiquer qu'il est désactivé */
+  }

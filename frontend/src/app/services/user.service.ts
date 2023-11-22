@@ -6,7 +6,6 @@ import { map } from 'rxjs/operators';
 import { Observable } from 'rxjs';
 import { plainToInstance } from 'class-transformer'; 
 
-
 @Injectable({ providedIn: 'root' })
 export class UserService {
     constructor(private http: HttpClient, @Inject('BASE_URL') private baseUrl: string) { }

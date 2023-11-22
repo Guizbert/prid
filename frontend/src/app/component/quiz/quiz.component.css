@@ -1,0 +1,41 @@
+.container {
+    display: grid;
+    margin: 0;
+    padding: 0;
+    grid-template-columns: fit-content(0) fit-content(0) auto;
+    grid-column-gap: 10px;
+    align-items: center;
+}
+
+a {
+    cursor: pointer;
+    color: blue;
+    text-decoration: underline;
+}
+
+.card-container {
+    display: flex;
+    flex-direction: row;
+    flex-flow: wrap;
+}
+
+.example-card {
+    width: 250px;
+    margin: 5px;
+}
+
+.card-buttons {
+    display: grid;
+    justify-items: center;
+    align-items: center;
+    grid-template-columns: 50% 50%;
+}
+
+.card-content {
+    text-align: center;
+    font-size: 14pt;
+}
+
+.self {
+    background-color: bisque;
+}

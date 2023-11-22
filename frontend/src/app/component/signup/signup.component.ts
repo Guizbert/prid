@@ -29,6 +29,7 @@ export class SignUpComponent{
         this.ctlFirstname = this.fb.control('', [Validators.minLength(3)]);
         this.ctlLastName = this.fb.control('', [Validators.minLength(3)]);
         this.ctlPasswordConfirm = this.fb.control('', [Validators.required, Validators.minLength(3)]);
+        this.ctlBirthdate = this.fb.control('', )
         this.signupForm = this.fb.group({
             pseudo: this.ctlPseudo,
             email: this.ctlEmail,
@@ -63,7 +64,7 @@ export class SignUpComponent{
     signup(){
         this.authService.signup(this.ctlPseudo.value, this.ctlEmail.value, this.ctlPassword.value).subscribe(() => {
             if(this.authService.currentUser){
-                this.router.navigate(['/signup']);
+                this.router.navigate(['/quiz']);
             }
         });
     }

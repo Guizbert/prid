@@ -54,6 +54,6 @@
         <mat-error *ngIf="signupForm.hasError('ctlPasswordNotConfirmed')">The passwords don't match</mat-error>
     </div>
     <div>
-        <button mat-stroked-button (click)="signup()" [disabled]="signupForm.invalid">Sign Up</button>
+        <button mat-stroked-button (click)="signup()" [disabled]="signupForm.invalid" class="btn btn-primary">Sign Up</button>
     </div>
 </form>
