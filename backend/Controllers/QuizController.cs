@@ -70,6 +70,8 @@ public class QuizController : ControllerBase
     }
 
 
+
+
 //faire le put pour la modif
 
 //faire le delete

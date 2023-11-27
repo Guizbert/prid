@@ -10,6 +10,14 @@ public enum Role
 
 public class User
 {
+
+    private readonly MsnContext? _context;
+    public User(){}
+
+    public User(MsnContext context){
+        this._context = context;
+    } 
+
     [Key]
     public int Id { get; set;} 
     //auto increment dans constructor
@@ -17,20 +25,20 @@ public class User
 
     public string Pseudo {get; set;}= null!;
 
-    public string Password {get; set;}= null!; // force a avoir une erreur si c'est vide
+    public string Password {get; set;}= null!;  // force a avoir une erreur si c'est vide
 
-    public string Email {get; set;} = null!;
-    //null! pour dire qu'il est non nullable 
+    public string Email {get; set;} = null!;    //null! pour dire qu'il est non nullable 
 
     public string? LastName{get; set;} = "";
-
     public string? FirstName{get; set;} = "";
-
     public DateTimeOffset? BirthDate { get; set; }
+    public Role Role { get; set; } = Role.Student;
 
     [NotMapped]
     public string? Token { get; set; }
-    public Role Role { get; set; } = Role.Student;
+    
+    public string? RefreshToken { get; set; }
+
 
     
     public int? Age{

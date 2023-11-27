@@ -4,11 +4,12 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace prid_2324_a12.Models;
 
-public enum Statut{
-    CLOTURE =0,
-    OUVERT=1,
-    EN_COURS=2,
-}
+// public enum Statut{
+//     CLOTURE ="CLOTURE",
+//     OUVERT="OUVERT",
+//     EN_COURS="EN_COURS",
+//     PAS_COMMENCE="PAS_COMMENCE"
+// }
 
 public class Quiz{
     [Key]
@@ -23,7 +24,7 @@ public class Quiz{
     [ForeignKey(nameof(DatabaseId))]
     public Database Database {get;set;}= null!;
     public int DatabaseId {get;set;}
-    public Statut Statut {get;set;} = Statut.CLOTURE;
+    // public Statut Statut {get;set;}
     // [ForeignKey(nameof(CreatorId))]
     // public User Creator {get;set;}
     // public int CreatorId {get;set;}

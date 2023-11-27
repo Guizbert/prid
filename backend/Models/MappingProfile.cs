@@ -12,13 +12,16 @@ public class MappingProfile : Profile
         _context = context;
 
         CreateMap<User, UserDTO>();
-        CreateMap<UserDTO, User>();
+        CreateMap<UserDTO, User>()
+            .ForMember(dst => dst.RefreshToken, opt => opt.Ignore());
 
         CreateMap<User, UserWithPasswordDTO>();
         CreateMap<UserWithPasswordDTO, User>();
 
         CreateMap<Quiz, QuizDTO>();
         CreateMap<QuizDTO, Quiz >();
-
+        
+        CreateMap<Question, QuestionDTO>();
+        CreateMap<QuestionDTO, Question >();
     }
 }

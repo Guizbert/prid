@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using prid_2324_a12.Helpers;
 
 namespace prid_2324_a12.Models;
 
@@ -10,131 +11,113 @@ public class MsnContext : DbContext
         : base(options) {
 
     }
-
-        protected override void OnModelCreating(ModelBuilder modelBuilder){
-            base.OnModelCreating(modelBuilder);
-
-
-            /***** USER *****/
-            modelBuilder.Entity<User>()
-                .Property(u => u.Id)
-                .ValueGeneratedOnAdd();
-                //https://stackoverflow.com/questions/36155429/auto-increment-on-partial-primary-key-with-entity-framework-core
-
-
-            modelBuilder.Entity<User>()
-                .HasIndex(m => m.Id)
-                .IsUnique();
-            modelBuilder.Entity<User>()
-                .HasIndex(m => m.Pseudo)
-                .IsUnique();
-            modelBuilder.Entity<User>()
-                .HasIndex(m => m.Email)
-                .IsUnique();
-
-            modelBuilder.Entity<Teacher>()
-                .HasBaseType<User>();
-
-            modelBuilder.Entity<Student>()
-                .HasBaseType<User>();
-
-            modelBuilder.Entity<User>()
-                .HasMany(u => u.Attempts)
-                .WithOne(u => u.User)
-                .OnDelete(DeleteBehavior.ClientCascade);
-            /***** ATTEMPT *****/
-            modelBuilder.Entity<Attempt>()
-                .Property(a => a.Id)
-                .ValueGeneratedOnAdd();
-
-            modelBuilder.Entity<Attempt>()
-                .HasIndex(a => a.Id)
-                .IsUnique();
-
-            modelBuilder.Entity<Attempt>()
-                .HasOne(a => a.User);
-
-            /***** ANSWER *****/
-
-            modelBuilder.Entity<Answer>()
-                .Property(a => a.Id)
-                .ValueGeneratedOnAdd();
-
-            modelBuilder.Entity<Answer>()
-                .HasIndex(a => a.Id)
-                .IsUnique();
-
-            modelBuilder.Entity<Answer>()
-                .HasOne(a => a.Attempt);
-            // modelBuilder.Entity<Answer>()
-
-
-            /***** QUIZZ *****/
-            modelBuilder.Entity<Quiz>()
-                .Property(q => q.Id)
-                .ValueGeneratedOnAdd();
-                
-            modelBuilder.Entity<Quiz>()
-                .HasIndex(q => q.Id)
-                .IsUnique();
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) {
+        base.OnConfiguring(optionsBuilder);
+        optionsBuilder
+            //.LogTo(Console.WriteLine, LogLevel.Information)
+            .EnableSensitiveDataLogging();
+    }
+    protected override void OnModelCreating(ModelBuilder modelBuilder){
+        base.OnModelCreating(modelBuilder);
+        /***** USER *****/
+        modelBuilder.Entity<User>()
+            .Property(u => u.Id)
+            .ValueGeneratedOnAdd();
+            //https://stackoverflow.com/questions/36155429/auto-increment-on-partial-primary-key-with-entity-framework-core
+        modelBuilder.Entity<User>()
+            .HasIndex(m => m.Id)
+            .IsUnique();
+        modelBuilder.Entity<User>()
+            .HasIndex(m => m.Pseudo)
+            .IsUnique();
+        modelBuilder.Entity<User>()
+            .HasIndex(m => m.Email)
+            .IsUnique();
+        modelBuilder.Entity<Teacher>()
+            .HasBaseType<User>();
+        modelBuilder.Entity<Student>()
+            .HasBaseType<User>();
+        modelBuilder.Entity<User>()
+            .HasMany(u => u.Attempts)
+            .WithOne(u => u.User)
+            .OnDelete(DeleteBehavior.ClientCascade);
+        /***** ATTEMPT *****/
+        modelBuilder.Entity<Attempt>()
+            .Property(a => a.Id)
+            .ValueGeneratedOnAdd();
+        modelBuilder.Entity<Attempt>()
+            .HasIndex(a => a.Id)
+            .IsUnique();
+        modelBuilder.Entity<Attempt>()
+            .HasOne(a => a.User);
+        /***** ANSWER *****/
+        modelBuilder.Entity<Answer>()
+            .Property(a => a.Id)
+            .ValueGeneratedOnAdd();
+        modelBuilder.Entity<Answer>()
+            .HasIndex(a => a.Id)
+            .IsUnique();
+        modelBuilder.Entity<Answer>()
+            .HasOne(a => a.Attempt);
+        // modelBuilder.Entity<Answer>()
+        /***** QUIZZ *****/
+        modelBuilder.Entity<Quiz>()
+            .Property(q => q.Id)
+            .ValueGeneratedOnAdd();
             
-            // modelBuilder.Entity<Quiz>()
-            //     .HasOne(q => q.Database);
-            
-            modelBuilder.Entity<Quiz>()
-                .HasMany(q => q.Questions)
-                .WithOne(questions => questions.Quiz)
-                .HasForeignKey(questions => questions.QuizId)
-                .OnDelete(DeleteBehavior.ClientCascade);
-
-            modelBuilder.Entity<Quiz>()
-                .HasMany(q => q.Attempts)
-                .WithOne(a => a.Quiz)
-                .OnDelete(DeleteBehavior.ClientCascade);
-
-            /***** QUESTION *****/
-            modelBuilder.Entity<Question>()
-                .Property(q => q.Id)
-                .ValueGeneratedOnAdd();
-
-            modelBuilder.Entity<Question>()
-                .HasIndex(q => q.Id)
-                .IsUnique();
-
-            modelBuilder.Entity<Question>()
-                .HasMany(q => q.Solutions)
-                .WithOne(s => s.Question)
-                .HasForeignKey(s => s.QuestionId)
-                .OnDelete(DeleteBehavior.ClientCascade);
-
-            /***** SOLUTION *****/
-
-            modelBuilder.Entity<Solution>()
-                .Property(s => s.Id)
-                .ValueGeneratedOnAdd();
-            modelBuilder.Entity<Solution>()
-                .HasIndex(s => s.Id)
-                .IsUnique();
-            modelBuilder.Entity<Solution>()
-                .HasOne(s => s.Question);
-
-            //si lastName || FirstName != null alors faut faire la validation
-
-            modelBuilder.Entity<Teacher>().HasData(
-                new Teacher { Id = 2, Pseudo = "ben", Password = "ben", LastName="Penelle", FirstName="Benoit", Email="ben@epfc.eu" },
-                new Teacher { Id = 3, Pseudo = "bruno", Password = "bruno", FirstName= "Bruno", LastName="Lacroix", Email="bruno@epfc.eu" }
-            );
-             modelBuilder.Entity<Student>().HasData(
-                new Student { Id = 4, Pseudo = "bob", Password = "bob", FirstName="bob", LastName= "l'Eponge", Email="bob@epfc.eu" },
-                new Student { Id = 5, Pseudo = "caro", Password ="caro", LastName="de Monaco",FirstName= "Caroline",  Email="cora@epfc.eu" }
-            );
-            modelBuilder.Entity<Database>().HasData(
+        modelBuilder.Entity<Quiz>()
+            .HasIndex(q => q.Id)
+            .IsUnique();
+        
+        // modelBuilder.Entity<Quiz>()
+        //     .HasOne(q => q.Database);
+        
+        modelBuilder.Entity<Quiz>()
+            .HasMany(q => q.Questions)
+            .WithOne(questions => questions.Quiz)
+            .HasForeignKey(questions => questions.QuizId)
+            .OnDelete(DeleteBehavior.ClientCascade);
+        modelBuilder.Entity<Quiz>()
+            .HasMany(q => q.Attempts)
+            .WithOne(a => a.Quiz)
+            .OnDelete(DeleteBehavior.ClientCascade);
+        /***** QUESTION *****/
+        modelBuilder.Entity<Question>()
+            .Property(q => q.Id)
+            .ValueGeneratedOnAdd();
+        modelBuilder.Entity<Question>()
+            .HasIndex(q => q.Id)
+            .IsUnique();
+        modelBuilder.Entity<Question>()
+            .HasMany(q => q.Solutions)
+            .WithOne(s => s.Question)
+            .HasForeignKey(s => s.QuestionId)
+            .OnDelete(DeleteBehavior.ClientCascade);
+        /***** SOLUTION *****/
+        modelBuilder.Entity<Solution>()
+            .Property(s => s.Id)
+            .ValueGeneratedOnAdd();
+        modelBuilder.Entity<Solution>()
+            .HasIndex(s => s.Id)
+            .IsUnique();
+        modelBuilder.Entity<Solution>()
+            .HasOne(s => s.Question);
+        //si lastName || FirstName != null alors faut faire la validation
+        modelBuilder.Entity<Teacher>().HasData(
+            new Teacher { Id = 2, Pseudo = "ben", Password= TokenHelper.GetPasswordHash("ben"), LastName="Penelle", FirstName="Benoit", Email="ben@epfc.eu" },
+            new Teacher { Id = 3, Pseudo = "bruno", Password=TokenHelper.GetPasswordHash("bruno"), FirstName= "Bruno", LastName="Lacroix", Email="bruno@epfc.eu" }
+        );
+         modelBuilder.Entity<Student>().HasData(
+            new Student { Id = 4, Pseudo = "bob", Password= TokenHelper.GetPasswordHash("bob"), FirstName="bob", LastName= "l'Eponge", Email="bob@epfc.eu" },
+            new Student { Id = 5, Pseudo = "caro", Password=TokenHelper.GetPasswordHash("caro"), LastName="de Monaco",FirstName= "Caroline",  Email="cora@epfc.eu" }
+        );
+        modelBuilder.Entity<Database>().HasData(
                 new Database { Id = 1, Name = "fournisseurs", Description = "Base de données fournisseurs" },
                 new Database { Id = 2, Name = "facebook", Description = "Base de données facebook" }
-            );
+        );
 
-            modelBuilder.Entity<Quiz>().HasData(
-                new Quiz { Id = 1, Name = "TP1", DatabaseId = 1, IsPublished = true},
+        modelBuilder.Entity<Quiz>().HasData(
+                new Quiz { Id = 1, Name = "TP1", DatabaseId = 1, IsPublished = true, },
                 new Quiz { Id = 2, Name = "TP2", DatabaseId = 1, IsPublished = true },
                 new Quiz { Id = 3, Name = "TP4", DatabaseId = 2, IsPublished = true },
                 new Quiz {
@@ -144,7 +127,8 @@ public class MsnContext : DbContext
                     IsPublished = true,
                     IsTest = true,
                     Start = DateTimeOffset.Now.AddDays(-1),
-                    Finish = DateTimeOffset.Now.AddDays(1)
+                    Finish = DateTimeOffset.Now.AddDays(1),
+                        // Statut= Statut.CLOTURE
                 },
                 new Quiz {
                     Id = 5,
@@ -165,7 +149,7 @@ public class MsnContext : DbContext
                     Finish = DateTimeOffset.Now.AddDays(2)
                 }
             );
-            modelBuilder.Entity<Question>().HasData(
+        modelBuilder.Entity<Question>().HasData(
                 new Question { Id = 1, QuizId = 1, Order = 1, Body = "On veut afficher le contenu de la table des fournisseurs." },
                 new Question { Id = 2, QuizId = 1, Order = 2, Body = "On veut le nom et la ville de tous les fournisseurs avec comme intitulé NOM et VILLE." },
                 new Question { Id = 3, QuizId = 1, Order = 3, Body = "On veut le nom des fournisseurs dont la ville est London ou Paris." },
@@ -175,7 +159,7 @@ public class MsnContext : DbContext
             );
 
 
-            modelBuilder.Entity<Solution>().HasData(
+        modelBuilder.Entity<Solution>().HasData(
                 new Solution { Id = 1, QuestionId = 1, Order = 1, Sql = "SELECT * FROM s" },
                 new Solution { Id = 2, QuestionId = 2, Order = 1, Sql = "SELECT sname NOM, city VILLE FROM s" },
                 new Solution { Id = 3, QuestionId = 3, Order = 1, Sql = "SELECT sname\nFROM s\nWHERE city='London' OR city='Paris'" },
@@ -187,7 +171,7 @@ public class MsnContext : DbContext
                 new Solution { Id = 9, QuestionId = 6, Order = 1, Sql = "SELECT DISTINCT PNAME FROM p WHERE  Color = 'RED' OR Color = 'BLUE'" },
                 new Solution { Id = 10, QuestionId = 6, Order = 2, Sql = "SELECT DISTINCT PNAME FROM p WHERE Color IN ('RED', 'BLUE')" }
             );
-            modelBuilder.Entity<Question>().HasData(
+        modelBuilder.Entity<Question>().HasData(
             new Question { Id = 7, QuizId = 2, Order = 1, Body = "Affichez l'identifiant des livraisons qui concernent un produit rouge." },
             new Question { Id = 8, QuizId = 2, Order = 2, Body = "Affichez le nom des fournisseurs qui fournissent le produit P4" },
             new Question { Id = 9, QuizId = 2, Order = 3, Body = "Affichez le nom des clients/projets qui utilisent le produit P3" },
@@ -319,13 +303,13 @@ public class MsnContext : DbContext
     }
 
 
-        public DbSet<User> Users => Set<User>();
-        public DbSet<Answer> Answers => Set<Answer>();
-        public DbSet<Attempt> Attempts => Set<Attempt>();
-        public DbSet<Database> Databases => Set<Database>();
-        public DbSet<Question> Questions => Set<Question>();
-        public DbSet<Quiz> Quizzes => Set<Quiz>();
-        public DbSet<Solution> Solutions => Set<Solution>();
+    public DbSet<User> Users => Set<User>();
+    public DbSet<Answer> Answers => Set<Answer>();
+    public DbSet<Attempt> Attempts => Set<Attempt>();
+    public DbSet<Database> Databases => Set<Database>();
+    public DbSet<Question> Questions => Set<Question>();
+    public DbSet<Quiz> Quizzes => Set<Quiz>();
+    public DbSet<Solution> Solutions => Set<Solution>();
 
-        
+    
 }

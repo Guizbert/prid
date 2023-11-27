@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using prid_2324_a12.Models;
 using System.IdentityModel.Tokens.Jwt;
 using System.Text;
+using System.Text.Json;
 using Microsoft.IdentityModel.Tokens;
 using System.Security.Claims;
 using prid_2324_a12.Helpers;
@@ -19,6 +20,7 @@ public class UsersController : ControllerBase
 {
     private readonly MsnContext _context;
     private readonly IMapper _mapper;
+    private readonly TokenHelper _tokenHelper;
 
     /*
     Le contrôleur est instancié automatiquement par ASP.NET Core quand une requête HTTP est reçue.
@@ -28,7 +30,9 @@ public class UsersController : ControllerBase
     public UsersController(MsnContext context, IMapper mapper) {
         _context = context;
         _mapper = mapper;
+        _tokenHelper = new TokenHelper(context);
     }
+    private async Task<User?> GetLoggedMember() => await _context.Users.FindAsync(User!.Identity!.Name);
 
     //[Authorized(Role.Teacher)] 
     // que les teacher aurant droit a cette fonction (pourra servir pour récup les étudiants et leurs réponses)
@@ -122,7 +126,9 @@ public class UsersController : ControllerBase
         var newUser = _mapper.Map<User>(user);                                      //fait un mapping vers une instance de user
         var result = await new UserValidator(_context).ValidateOnCreate(newUser);   // nouveau validator et faire une validation async
         if (!result.IsValid)
-            return BadRequest(result);                                              //return status 400(bad Request) avec le resultat de la validation (JSON)
+            return BadRequest(result);
+        // hash pswd
+        newUser.Password = TokenHelper.GetPasswordHash(newUser.Password);                                              //return status 400(bad Request) avec le resultat de la validation (JSON)
         _context.Users.Add(newUser);
         await _context.SaveChangesAsync();//creation en db
 
@@ -186,24 +192,33 @@ public class UsersController : ControllerBase
         if (user == null)
             return null;
 
-        if (user.Password == password) {
+        var hash = TokenHelper.GetPasswordHash(password); 
+        if (user.Password == hash) {
             // authentication successful so generate jwt token
-            var tokenHandler = new JwtSecurityTokenHandler();
-            var key = Encoding.ASCII.GetBytes("my-super-secret-key");
-            var tokenDescriptor = new SecurityTokenDescriptor {
-                Subject = new ClaimsIdentity(new Claim[] {
-                        new Claim(ClaimTypes.Name, user.Pseudo),
-                        new Claim(ClaimTypes.Role, user.Role.ToString())
-                    }),
-                IssuedAt = DateTime.UtcNow,
-                Expires = DateTime.UtcNow.AddMinutes(10),
-                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
-            };
-            var token = tokenHandler.CreateToken(tokenDescriptor);
-            user.Token = tokenHandler.WriteToken(token);
+            user.Token = TokenHelper.GenerateJwtToken(user.Pseudo, user.Role);
+            var refreshToken = TokenHelper.GenerateRefreshToken();
+            await _tokenHelper.SaveRefreshTokenAsync(pseudo, refreshToken);
         }
 
         return user;
+    }
+
+    [AllowAnonymous]
+    [HttpPost("refresh")]
+    public async Task<ActionResult<TokensDTO>> Refresh([FromBody] TokensDTO tokens) {
+        var principal = TokenHelper.GetPrincipalFromExpiredToken(tokens.Token);
+        var pseudo = principal.Identity?.Name!;
+        var savedRefreshToken = await _tokenHelper.GetRefreshTokenAsync(pseudo);
+        if (savedRefreshToken != tokens.RefreshToken)
+            throw new SecurityTokenException("Invalid refresh token");
+        var newToken = TokenHelper.GenerateJwtToken(principal.Claims);
+        var newRefreshToken = TokenHelper.GenerateRefreshToken();
+        await _tokenHelper.SaveRefreshTokenAsync(pseudo, newRefreshToken);
+        
+        return new TokensDTO {
+            Token = newToken,
+            RefreshToken = newRefreshToken
+        };
     }
 
 }
