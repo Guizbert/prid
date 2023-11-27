@@ -19,7 +19,7 @@ export class AuthenticationService {
         this.currentUser = plainToClass(User, data);
     }
 
-    login(pseudo: string, password: string) {
+    login(pseudo: string, password: string): Observable<User> {
         console.log(pseudo, password);
         return this.http.post<any>(`${this.baseUrl}api/users/authenticate`, { pseudo, password })
             .pipe(map(user => {
@@ -30,9 +30,20 @@ export class AuthenticationService {
                     sessionStorage.setItem('currentUser', JSON.stringify(user));
                     this.currentUser = user;
                 }
+                console.log(user);
 
                 return user;
             }));
+    }
+    refresh() {
+        return this.http.post<User>(`${this.baseUrl}api/users/refresh`, this.currentUser).pipe(
+            map(res => {
+                this.currentUser!!.token = res.token;
+                this.currentUser!!.refreshToken = res.refreshToken;
+                sessionStorage.setItem('currentUser', JSON.stringify(this.currentUser));
+                return res;
+            })
+        );
     }
     logout() {
         // remove user from local storage to log user out

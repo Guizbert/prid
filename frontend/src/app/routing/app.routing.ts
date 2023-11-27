@@ -33,6 +33,7 @@ const appRoutes: Routes = [
         path: 'quiz',
         component: QuizComponent
     },
+    
     { path: 'restricted', component: RestrictedComponent },
     { path: '**', component: UnknownComponent }
 ];

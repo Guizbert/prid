@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild, AfterViewInit, ElementRef, OnDestroy } from '@angular/core';
+import { Component, OnInit, ViewChild, AfterViewInit, ElementRef, OnDestroy, Input, OnChanges, SimpleChanges } from '@angular/core';
 import { User } from "src/app/models/user";
 // import { Quizzes } from "src/app/component/quiz/Quizzes.component";
 // import { Test } from "src/app/component/quiz/Test.component";
@@ -25,7 +25,17 @@ export class QuizTestComponent implements AfterViewInit{
     displayedColumns: string[] = ['name', 'description', 'start', 'finish', 'statut', 'isTest' , 'actions'];
     dataSource: MatTableDataSource<Quiz> = new MatTableDataSource();
     // test: Test[] = [];
-    filter: string ="";
+
+    private _filter?: string;
+    
+    get filter(): string | undefined {
+        return this._filter;
+    }
+    
+    @Input() set filter(value: string | undefined) {
+        this._filter = value;
+        this.load('setter' + value);
+    }
     state: MatTableState;
 
     @ViewChild(MatPaginator) paginator!: MatPaginator;
@@ -51,16 +61,26 @@ export class QuizTestComponent implements AfterViewInit{
         this.refresh();
     }
 
+    ngOnChanges(changes: SimpleChanges): void {
+        this.dataSource.filterPredicate = (data: Quiz, filter: string)=> {
+            const str =data.name + ' ' + data.description + ' '+(data.start ? format(data.start!, 'dd/MM/yyyy') : '') + ' '+(data.finish ? format(data.finish!, 'dd/MM/yyyy') : '');
+            return str.toLowerCase().includes(filter);
+        }
+    }
+
     edit(quiz: Quiz){
         console.log(quiz);
     }
 
     refresh(){
-        this.quizService.getQuizzes().subscribe(quizzes => {
+        this.quizService.getTest().subscribe(quizzes => {
             this.dataSource.data = quizzes;
         })
     }
 
+    load(from: string): void {
+        console.log(from, 'do something with the filter ', this.filter);
+    }
     
 
     //utiliser dialog pour delete?

@@ -2,8 +2,8 @@ import { Injectable, Inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 
 import { Quiz } from '../models/quiz';
-import { map } from 'rxjs/operators';
-import { Observable } from 'rxjs';
+import { catchError, map } from 'rxjs/operators';
+import { Observable, of } from 'rxjs';
 import { plainToInstance } from 'class-transformer'; 
 
 @Injectable({ providedIn: 'root' })
@@ -25,5 +25,11 @@ export class QuizService{
         return this.http.get<any[]>(`${this.baseUrl}api/quiz/quizzes`).pipe(
             map(res => plainToInstance(Quiz, res))
         );
+    }
+    getQuiz(id: number){
+        return this.http.get<Quiz>(`${this.baseUrl}api/quiz/${id}`).pipe(
+            map(q => plainToInstance(Quiz,q)),
+            catchError(err => of(null))
+        )
     }
 }
