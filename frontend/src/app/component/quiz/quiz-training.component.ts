@@ -21,12 +21,11 @@ import { AuthenticationService } from 'src/app/services/authentication.service';
     selector: 'quizTraining',
     templateUrl: 'quiz-training.component.html',
 })
-export class QuizTrainingComponent implements AfterViewInit{
+export class QuizTrainingComponent implements OnInit, AfterViewInit{
     displayedColumns: string[] = ['name', 'description', 'start', 'finish', 'statut', 'isTest', 'actions'];
     dataSource: MatTableDataSource<Quiz> = new MatTableDataSource();
 
     private _filter?: string;
-
     get filter(): string | undefined {
         return this._filter;
     }
@@ -35,13 +34,21 @@ export class QuizTrainingComponent implements AfterViewInit{
         this._filter = value;
         this.load('setter');
     }
-    
+    private _isTest?: boolean;
+
+    get isFilter(): boolean | undefined {
+        return this._isTest;
+    }
+    @Input() set isTest(value: boolean | undefined) {
+        this._isTest = value;
+        this.load('setter');
+    }    
     state: MatTableState;
 
     @ViewChild(MatPaginator) paginator!: MatPaginator;
     @ViewChild(MatSort) sort!: MatSort;
 
-    constructor( 
+    constructor(
         private quizService: QuizService,
         private stateService: StateService,
         public dialog: MatDialog,
@@ -50,42 +57,55 @@ export class QuizTrainingComponent implements AfterViewInit{
         this.state = this.stateService.quizListState;
     }
 
-    // ngOnChanges(changes: SimpleChanges): void {
-    //     console.log(changes.filter.currentValue + "  <--- changes dans quiz training ");
-        
-    //     console.log(this.dataSource);
-    //     this.state.bind(this.dataSource);
-    //     this.refresh();
-    // }
-
+    ngOnInit(): void {
+       
+    }
     ngAfterViewInit() {
         this.dataSource.paginator = this.paginator;
         this.dataSource.sort = this.sort;
-        this.dataSource.filterPredicate = (data: Quiz, filter: string)=> {
-            const str =data.name + ' ' + data.description + ' '+
-                        (data.start ? format(data.start!, 'dd/MM/yyyy') : '') + ' '+
-                                (data.finish ? format(data.finish!, 'dd/MM/yyyy') : '');
-            return str.toLowerCase().includes(filter);
+        this.dataSource.filterPredicate = (data: Quiz, filter: string) => {
+            // Utilisez les mêmes propriétés que pour isTest true
+            var str = data.name + ' ' + data.description + ' ' + data.statut + ' ';
+            // if (this._isTest) {
+            //     if (data.start instanceof Date && !isNaN(data.start.getTime())) {
+            //         str += 'Début: ' + format(data.start!, 'dd/MM/yyyy') + ' ';
+            //     }
+                
+            //     if (data.finish instanceof Date && !isNaN(data.finish.getTime())) {
+            //         str += 'Fin: ' + format(data.finish!, 'dd/MM/yyyy') + ' ';
+            //     }
+            // }
+            return str.toLowerCase().includes(filter.toLowerCase());
         }
+        
         this.state.bind(this.dataSource);
         this.refresh();
     }
+    
 
     edit(quiz: Quiz){
         console.log(quiz);
     }
     refresh(){
-        this.quizService.getQuizzes().subscribe(quizzes => {
-            this.dataSource.data = quizzes;
-            console.log(quizzes);
-            //this.state.restoreState(this.dataSource); <-
-            this.filter = this.state.filter;
-        })
+        if(this._isTest){
+            this.quizService.getTest().subscribe(quizzes => {
+                this.dataSource.data = quizzes;
+                this.filter = this.state.filter;
+            })
+        }else
+        {    this.quizService.getQuizzes().subscribe(quizzes => {
+                this.dataSource.data = quizzes;
+                //this.state.restoreState(this.dataSource); <-
+                this.filter = this.state.filter;
+            })
+        }
     }
 
     load(from: string): void {
         this.dataSource.filter = this.filter?? "";
+        
         console.log(from, 'do something with the filter ', this.filter + "  load quiz-training");
+
     }
 
     

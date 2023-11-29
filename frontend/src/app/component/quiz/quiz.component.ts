@@ -27,11 +27,10 @@ export class QuizComponent implements OnInit, OnDestroy{
     isTeacher = false;
 
     filter?: string = '';
-
     @ViewChild(MatPaginator) paginator!: MatPaginator;
     @ViewChild(MatSort) sort!: MatSort;
 
-    constructor( private quizService: QuizService,
+    constructor(
         private stateService: StateService,
         public dialog: MatDialog,
         public snackBar: MatSnackBar,

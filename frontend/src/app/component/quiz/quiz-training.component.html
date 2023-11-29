@@ -17,12 +17,12 @@
             <td mat-cell *matCellDef="let quiz">{{ quiz.start | date:'dd/MM/yyyy'}}</td>
         </ng-container>
         <!-- Finish Column -->
-        <ng-container matColumnDef="finish">
+        <ng-container matColumnDef="finish" >
             <th mat-header-cell *matHeaderCellDef>Finish</th>
             <td mat-cell *matCellDef="let quiz">{{ quiz.finish | date:'dd/MM/yyyy' }}</td>
         </ng-container>
         <!-- statut Column -->
-        <ng-container matColumnDef="statut">
+        <ng-container matColumnDef="statut" >
             <th mat-header-cell *matHeaderCellDef>statut</th>
             <td mat-cell *matCellDef="let quiz">{{ quiz.statut}}</td>
         </ng-container>
