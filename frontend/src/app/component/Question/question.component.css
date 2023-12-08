@@ -1,0 +1,47 @@
+/* table {
+    border-collapse: collapse;
+    border-spacing: 0;
+    width: 100%;
+  }
+  
+  thead {
+    background-color: #ccc;
+  }
+  
+  th,
+  td {
+    padding: 10px;
+    border: 1px solid #ccc;
+  }
+  
+  th {
+    font-weight: bold;
+  }
+  body {
+    font-family: sans-serif;
+    font-size: 16px;
+  }
+   */
+  h1,
+  h2 {
+    text-align: center;
+  }
+
+  .top {
+    display: flex;
+    /* justify-content: space-between; */
+    margin: 0 auto;
+  }
+  
+  /* .top > .left {
+    margin-right: 100px;
+  } */
+  
+  .top > h1 {
+    margin: 1px 450px 1px 250px;
+  }
+  
+  .exo{
+    color: aliceblue;
+  }
+

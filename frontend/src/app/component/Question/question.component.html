@@ -1,0 +1,18 @@
+<!-- le ? permet d'aller chercher la question que quand on la reçoit -->
+<div class="top">
+    <div class="left">
+        <button type="button" (click)="prevQuestion()">&lt;</button>
+        <button type="button" (click)="nextQuestion()">&gt;</button>
+    </div>
+    <h1>question  {{ question?.order }} du {{ question?.quizName}}</h1>
+    <button type="button" (click)="exit()" class="exit">&times;</button>
+</div>
+<p class="exo"> {{ question?.body}} </p>
+
+<code-editor #editor [(ngModel)]="query" ></code-editor>
+
+<div class="action">
+    <button (click)="envoyer()"   >Envoyer    </button>
+    <button (click)="delete()"    >Effacer    </button>
+    <button (click)="voirSoluce()">Voir soluce</button>
+</div>

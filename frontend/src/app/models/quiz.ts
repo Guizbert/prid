@@ -1,5 +1,7 @@
 import { Type } from "class-transformer";
 import 'reflect-metadata';
+import { Question } from "./question";
+import { Database } from "./database";
 
 export enum Statut{
     CLOTURE ="CLOTURE",
@@ -8,6 +10,7 @@ export enum Statut{
     PAS_COMMENCE= "PAS COMMENCE"
 }
 export class Quiz{
+    id?: number;
     name?: string;
     description?: string;
     isPublished?: boolean;
@@ -15,9 +18,12 @@ export class Quiz{
     isTest?: boolean;
     start?: Date;
     finish?: Date;
-    database?: string;
+    database?: Database;
     statut?: Statut = Statut.PAS_COMMENCE; //recherche en db si current user a fait un attempt
     action?: string;
+
+
+    questions?: Question[];
     
     get display(): string {
         console.log(this.statut);

@@ -16,8 +16,9 @@ import { JwtInterceptor } from '../interceptors/jwt.interceptor';
 import { LoginComponent } from '../component/login/login.component';
 import { SignUpComponent } from '../component/signup/signup.component';
 import { QuizComponent } from '../component/quiz/quiz.component';
-import { QuizTestComponent } from '../component/quiz/quiz-test.component';
 import { QuizTrainingComponent } from '../component/quiz/quiz-training.component';
+import { QuestionComponent } from '../component/question/question.component';
+import { CodeEditorComponent } from '../component/code-editor/code-editor.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { SharedModule } from './shared.module';
 import { MAT_DATE_FORMATS, MAT_DATE_LOCALE } from '@angular/material/core';
@@ -34,9 +35,10 @@ import { fr } from 'date-fns/locale';
         LoginComponent,
         SignUpComponent,
         QuizComponent,
-        QuizTestComponent,
         QuizTrainingComponent,
+        QuestionComponent,
         UnknownComponent,
+        CodeEditorComponent,
         RestrictedComponent
     ],
     imports: [

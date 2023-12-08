@@ -10,6 +10,7 @@ import { QuizComponent } from '../component/quiz/quiz.component';
 import { UnknownComponent } from '../component/unknown/unknown.component';
 import { AuthGuard } from '../services/auth.guard';
 import { Role } from '../models/user';
+import { QuestionComponent } from '../component/question/question.component';
 
 const appRoutes: Routes = [
     { path: '', component: HomeComponent, pathMatch: 'full' },
@@ -32,6 +33,10 @@ const appRoutes: Routes = [
     {
         path: 'quiz',
         component: QuizComponent
+    },
+    {
+        path: 'question/:id',
+        component: QuestionComponent
     },
     
     { path: 'restricted', component: RestrictedComponent },

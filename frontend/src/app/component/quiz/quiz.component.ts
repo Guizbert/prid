@@ -22,7 +22,6 @@ import { AuthenticationService } from 'src/app/services/authentication.service';
 })
 export class QuizComponent implements OnInit, OnDestroy{
     dataSource: MatTableDataSource<Quiz> = new MatTableDataSource();
-    // test: Test[] = [];
     state: MatTableState;
     isTeacher = false;
 
@@ -40,7 +39,6 @@ export class QuizComponent implements OnInit, OnDestroy{
     }
     ngOnInit(): void {
         const filt = this.filter;
-        console.log(filt + " <--- parent ");
 
         if(this.authentification.currentUser?.role === Role.Teacher){
             this.isTeacher = true;

@@ -17,6 +17,7 @@ import { MatCardModule } from '@angular/material/card';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatDateFnsModule } from '@angular/material-date-fns-adapter';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { Ace } from 'ace-builds';
 
 @NgModule({
     imports: [
