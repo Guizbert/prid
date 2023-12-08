@@ -7,4 +7,6 @@ public class AttemptDTO
     public DateTimeOffset? Start { get; set;}
     public DateTimeOffset? Finish {get; set;}
     public User user{get;set;} = null!;
+   // public virtual ICollection<AnswerDTO> Answers {get;set;} = new List<AnswerDTO>();
+
 }

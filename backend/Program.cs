@@ -11,7 +11,15 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 
 builder.Services.AddControllers();
-builder.Services.AddDbContext<MsnContext>(opt=>opt.UseSqlite("Data Source=msn.db"));
+//builder.Services.AddDbContext<MsnContext>(opt=>opt.UseSqlite("Data Source=msn.db"));
+builder.Services.AddSpaStaticFiles(cfg => cfg.RootPath = "wwwroot/frontend");
+
+builder.Services.AddDbContext<MsnContext>(opt => opt.UseMySql(
+   builder.Configuration.GetConnectionString("MySQLCS"),
+   ServerVersion.Parse("10.4.24-mariadb")
+));
+
+
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -24,6 +32,8 @@ builder.Services.AddScoped(provider => new MapperConfiguration(cfg => {
         cfg.UseEntityFrameworkCoreModel<MsnContext>(builder.Services);
     }).CreateMapper());
 
+
+
 // builder.Services.AddDbContext<MsnContext>(opt => opt.UseSqlServer(
 //     builder.Configuration.GetConnectionString("prid-tuto-mssql")
 // ));
@@ -32,6 +42,7 @@ builder.Services.AddScoped(provider => new MapperConfiguration(cfg => {
 //     ServerVersion.Parse("10.4.28-mariadb")
 // ));
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle    
+
 
 
 //------------------------------ 
@@ -109,6 +120,10 @@ else
 context?.Database.EnsureCreated();
 
 
+app.UseDefaultFiles();
+app.UseStaticFiles();
+app.UseSpaStaticFiles();
+
 app.UseAuthentication();
 app.UseAuthorization();
 //app.UseSpaStaticFiles();
@@ -117,7 +132,7 @@ app.UseAuthorization();
 app.MapControllers();
 
 
-//app.UseSpa(spa => {});
+app.UseSpa(spa => {});
 
 
 app.Run();

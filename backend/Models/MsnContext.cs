@@ -80,7 +80,9 @@ public class MsnContext : DbContext
         modelBuilder.Entity<Quiz>()
             .HasMany(q => q.Attempts)
             .WithOne(a => a.Quiz)
+            .HasForeignKey(a => a.QuizId)
             .OnDelete(DeleteBehavior.ClientCascade);
+
         /***** QUESTION *****/
         modelBuilder.Entity<Question>()
             .Property(q => q.Id)
@@ -93,6 +95,7 @@ public class MsnContext : DbContext
             .WithOne(s => s.Question)
             .HasForeignKey(s => s.QuestionId)
             .OnDelete(DeleteBehavior.ClientCascade);
+
         /***** SOLUTION *****/
         modelBuilder.Entity<Solution>()
             .Property(s => s.Id)
@@ -102,7 +105,11 @@ public class MsnContext : DbContext
             .IsUnique();
         modelBuilder.Entity<Solution>()
             .HasOne(s => s.Question);
-        //si lastName || FirstName != null alors faut faire la validation
+
+
+
+            /* ===================   ajout data   =================== */
+
         modelBuilder.Entity<Teacher>().HasData(
             new Teacher { Id = 2, Pseudo = "ben", Password= TokenHelper.GetPasswordHash("ben"), LastName="Penelle", FirstName="Benoit", Email="ben@epfc.eu" },
             new Teacher { Id = 3, Pseudo = "bruno", Password=TokenHelper.GetPasswordHash("bruno"), FirstName= "Bruno", LastName="Lacroix", Email="bruno@epfc.eu" }

@@ -33,8 +33,6 @@ public class QuizController : ControllerBase
         return _mapper.Map<List<QuizDTO>>(await _context.Quizzes.ToListAsync());
     }
 
- 
-
     [AllowAnonymous]
     [HttpGet("{id}")]
     public async Task<ActionResult<QuizDTO>> GetOne(int id){
@@ -58,7 +56,9 @@ public class QuizController : ControllerBase
     [Authorized(Role.Teacher, Role.Student, Role.Admin)]
     [HttpGet("test")]
     public async Task<ActionResult<IEnumerable<QuizDTO>>> GetTest(){
-        return _mapper.Map<List<QuizDTO>>(await _context.Quizzes.Where(q=>q.IsTest ==true).ToListAsync());
+        return _mapper.Map<List<QuizDTO>>(await _context.Quizzes.Where(q=>q.IsTest ==true)
+            .Include(q => q.Database)
+            .OrderBy(q => q.Name).ToListAsync());
     }
 
     
@@ -66,9 +66,23 @@ public class QuizController : ControllerBase
     [Authorized(Role.Teacher, Role.Student, Role.Admin)]
     [HttpGet("quizzes")]
     public async Task<ActionResult<IEnumerable<QuizDTO>>> GetQuiz(){
-        return _mapper.Map<List<QuizDTO>>(await _context.Quizzes.Where(q=>q.IsTest ==false).ToListAsync());
+        return _mapper.Map<List<QuizDTO>>(await _context.Quizzes.Where(q=>q.IsTest ==false)
+        .Include(q => q.Database)
+        //.Include(q => q.IsTest)
+        .OrderBy(q => q.Name).ToListAsync());
     }
 
+    [AllowAnonymous]
+    [Authorized(Role.Teacher, Role.Student, Role.Admin)]
+    [HttpGet("getQuestions")]
+    public async Task<ActionResult<IEnumerable<QuestionDTO>>> GetQuestions(int quizId){
+        return _mapper.Map<List<QuestionDTO>>(await _context.Questions
+            .Where(q => q.QuizId == quizId)
+            .OrderBy(q => q.Order)
+            .ToListAsync());
+    }
+
+ 
 
 
 

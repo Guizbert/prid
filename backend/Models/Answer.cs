@@ -15,6 +15,8 @@ public class Answer {
     public Attempt Attempt{get;set;}= null!;
     public int AttemptId{get;set;}
     [ForeignKey(nameof(QuestionId))]
-    public Question Question {get;set;}
+    public Question Question {get;set;} = null!;
     public int QuestionId{get;set;}
+
+    public virtual ICollection<Attempt> Attempts {get;set;}= new HashSet<Attempt>();
 }

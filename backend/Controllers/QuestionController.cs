@@ -28,21 +28,65 @@ public class QuestionController : ControllerBase
     }
 
     [AllowAnonymous]
-    [HttpGet("quiz/{quizId}")]
-    public async Task<ActionResult<IEnumerable<QuestionDTO>>> GetAll(int quizId){
-        return _mapper.Map<List<QuestionDTO>>(await _context.Questions.Where(q => q.QuizId == quizId).ToListAsync());
+    [HttpGet]
+    public async Task<ActionResult<IEnumerable<QuestionDTO>>> GetAll(){
+        return _mapper.Map<List<QuestionDTO>>(await _context.Questions.ToListAsync());
     }
 
     [AllowAnonymous]
-    [HttpGet("{id}")]
+    [HttpGet("getByQuiz/{quizId}")]
+    public async Task<Question?> GetByQuiz(int quizId){
+        var question = await _context.Questions.Where(q => q.QuizId == quizId).ToListAsync();
+        return question[0];
+    }
+
+    [AllowAnonymous]
+    [HttpGet("getOther/{questionId}")]
+    public async Task<ActionResult<IEnumerable<QuestionDTO>>> GetByQuestion(int questionid){
+        // Récupérer le quizId de la question actuelle
+            var quizId = await _context.Questions
+                .Where(q => q.Id == questionid)
+                .Select(q => q.QuizId)
+                .FirstOrDefaultAsync();
+
+            // Récupérer toutes les questions liées au quizId
+            var questions = await _context.Questions
+                .Where(q => q.QuizId == quizId)
+                .ToListAsync();
+            // Mapper et retourner les questions en format DTO
+            var questionsDTO = _mapper.Map<List<QuestionDTO>>(questions);
+            return questionsDTO;
+    }
+
+    [AllowAnonymous]
+    [HttpGet("byId/{id}")]
     public async Task<ActionResult<QuestionDTO>> GetOne(int id){
-        var question = await _context.Questions.SingleOrDefaultAsync(q => q.Id == id);
+       var question = await _context.Questions
+            .Include(q => q.Quiz) // Include the associated Quiz entity
+                .ThenInclude(q => q.Database)
+            .Include(q => q.Solutions) // Include Solutions for the question
+            .Include(q => q.Answers)
+            .ThenInclude(q => q.Attempts)
+            .FirstOrDefaultAsync(q => q.Id == id);
 
         if (question == null)
             return NotFound();
 
-        return _mapper.Map<QuestionDTO>(question);
+        var questionDTO = _mapper.Map<QuestionDTO>(question);
+        return questionDTO;
     }
+
+    // [AllowAnonymous]
+    // [HttpGet("getQuiz/{id}")]
+    // public async Task<ActionResult<QuizDTO>> GetQuizByQuestion(int id){
+    //     var question = await _context.Questions.SingleOrDefaultAsync(q => q.QuizId == id);
+
+    //     if (question == null)
+    //         return NotFound();
+
+    //     var quizDTO = _mapper.Map<QuizDTO>(question.Quiz);
+    //     return quizDTO;
+    // }
 
 
     [AllowAnonymous]
@@ -60,7 +104,18 @@ public class QuestionController : ControllerBase
     }
 
 
+    [AllowAnonymous]
+    [Authorized(Role.Teacher, Role.Student, Role.Admin)]
+    [HttpGet("getQuestionss/{quizId}")]
+    public async Task<ActionResult<List<int>>> GetQuestionss(int quizId){
+        var questionIds = await _context.Questions
+            .Where(q => q.QuizId == quizId)
+            .OrderBy(q => q.Order)
+            .Select(q => q.Id)
+            .ToListAsync();
 
+        return questionIds;
+    }
 //faire le put pour la modif
 
 //faire le delete

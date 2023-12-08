@@ -18,10 +18,22 @@ public class MappingProfile : Profile
         CreateMap<User, UserWithPasswordDTO>();
         CreateMap<UserWithPasswordDTO, User>();
 
-        CreateMap<Quiz, QuizDTO>();
-        CreateMap<QuizDTO, Quiz >();
-        
-        CreateMap<Question, QuestionDTO>();
-        CreateMap<QuestionDTO, Question >();
+        CreateMap<Quiz, QuizDTO>()
+            .ForMember(dest => dest.Questions, opt => opt.MapFrom(src => src.Questions));
+
+        CreateMap<QuizDTO, Quiz>()
+            .ForMember(dest => dest.Questions, opt => opt.MapFrom(src => src.Questions.Select(q => new Question { Id = q.Id, Order = q.Order, Body = q.Body, QuizId = q.QuizId })));
+
+        CreateMap<Question, QuestionDTO>()
+            .ForMember(dest => dest.QuizName, opt => opt.MapFrom(src => src.Quiz.Name));
+        CreateMap<QuestionDTO, Question>();
+
+
+        CreateMap<Solution,SolutionDTO>();
+        CreateMap<SolutionDTO,Solution>();
+
+        CreateMap<Answer, AnswerDTO>();
+        CreateMap<AnswerDTO, Answer>();
+       
     }
 }

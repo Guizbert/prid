@@ -18,4 +18,7 @@ public class Attempt {
     [ForeignKey(nameof(QuizId))]
     public Quiz Quiz {get;set;} = null!;
     public int QuizId {get;set;}
+
+    //public virtual ICollection<Answer> Answers {get;set;}= new HashSet<Answer>();
+
 }
