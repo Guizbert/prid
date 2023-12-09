@@ -17,6 +17,11 @@
     <button (click)="voirSoluce()">Voir soluce</button>
 </div>
 
+
+<div *ngIf="sent" class="">
+    <p>{{answerGood}}</p>
+</div>
+
 <div  *ngIf="showSoluce">
     <p><b>SOLUCES : </b></p>
     <div *ngFor="let solution of solutions">

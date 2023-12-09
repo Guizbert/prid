@@ -77,8 +77,8 @@ export class QuizTrainingComponent implements OnInit,  AfterViewInit{
 
 
     ngAfterViewInit() {
-        this.displayedColumns = this.isTest ? ['name', 'database', 'start', 'finish', 'statut', 'evaluation', 'isTest', 'actions'] 
-                                : ['name', 'database', 'statut',   'isTest', 'actions'];
+        this.displayedColumns = !this.isTest ? ['name', 'database', 'statut',   'isTest', 'actions']
+                                    :['name', 'database', 'start', 'finish', 'statut', 'evaluation', 'isTest', 'actions'];
         this.dataSource.paginator = this.paginator;
         this.dataSource.sort = this.sort;
         this.dataSource.filterPredicate = (data: Quiz, filter: string) => {

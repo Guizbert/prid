@@ -8,6 +8,8 @@ using System.Text;
 using Microsoft.IdentityModel.Tokens;
 using System.Security.Claims;
 using prid_2324_a12.Helpers;
+using MySql.Data.MySqlClient;
+using System.Data;
 
 namespace prid_2324_a12.Controllers;
 
@@ -116,6 +118,69 @@ public class QuestionController : ControllerBase
 
         return questionIds;
     }
+
+    [AllowAnonymous]
+    [Authorized(Role.Teacher, Role.Student, Role.Admin)]
+    [HttpGet("querySent/{query}")]
+    public async Task<string[][]> Sql(string query)
+    {
+        // Your connection string, replace with actual details
+        string connectionString = "server=localhost;database=fournisseurs;uid=root;password=root";
+
+        using MySqlConnection connection = new MySqlConnection(connectionString);
+        DataTable table = new DataTable();
+
+        try
+        {
+            connection.Open();
+            MySqlCommand command = new MySqlCommand($"SET sql_mode = 'STRICT_ALL_TABLES'; {query}", connection);
+            MySqlDataAdapter adapter = new MySqlDataAdapter(command);
+            adapter.Fill(table);
+        }
+        catch (Exception e)
+        {
+            // Handle the exception
+            Console.WriteLine($"Error: {e.Message}");
+            return null;
+        }
+
+        // Get column names
+        string[] columns = new string[table.Columns.Count];
+        for (int i = 0; i < table.Columns.Count; ++i)
+            columns[i] = table.Columns[i].ColumnName;
+
+        // Get data
+        string[][] data = new string[table.Rows.Count][];
+        for (int j = 0; j < table.Rows.Count; ++j)
+        {
+            data[j] = new string[table.Columns.Count];
+            for (int i = 0; i < table.Columns.Count; ++i)
+            {
+                object value = table.Rows[j][i];
+                string str;
+                if (value == null)
+                    str = "NULL";
+                else
+                {
+                    if (value is DateTime d)
+                    {
+                        if (d.TimeOfDay == TimeSpan.Zero)
+                            str = d.ToString("yyyy-MM-dd");
+                        else
+                            str = d.ToString("yyyy-MM-dd hh:mm:ss");
+                    }
+                    else
+                        str = value?.ToString() ?? "";
+                }
+                data[j][i] = str;
+            }
+        }
+
+        return data;
+    }
+
+
+
 //faire le put pour la modif
 
 //faire le delete

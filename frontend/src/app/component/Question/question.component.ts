@@ -27,6 +27,8 @@ export class QuestionComponent implements OnInit, OnDestroy  {
   quiz!: Quiz;
   subscription: Subscription;
   showSoluce: boolean = false;
+  answerGood: string = "";
+  sent: boolean = false;
   user?: User ;
 
   @ViewChild("editor") editor!: CodeEditorComponent;
@@ -95,8 +97,20 @@ export class QuestionComponent implements OnInit, OnDestroy  {
   envoyer() {
     // Implement the refresh logic as needed
     console.log("send             <-");
+    this.sent = true;
+    this.questionService.querySent(this.query).subscribe(
+      (data: string[][]) => {
+        // Assume that the data received is a two-dimensional array of strings
+        console.log(data);
+        // Utilisez les données reçues comme nécessaire dans votre composant
+      },
+      (error) => {
+        console.error(error);
+        // Handle the error if needed
+      }
+    );
   }
-
+  
   delete(){
     this.query = "";
   }
@@ -109,7 +123,6 @@ export class QuestionComponent implements OnInit, OnDestroy  {
       for(let i = 0; i < this.question.solutions!.length; ++i){
         this.solutions.push(this.question.solutions![i].sql!);
       }
-      console.log(this.solutions);
     }
 
   }
@@ -129,7 +142,9 @@ export class QuestionComponent implements OnInit, OnDestroy  {
     this.questionService.getById(id).subscribe(res => {
       this.question = res;
       this.delete();
+      this.answerGood = "";
       console.log(this.question);
+      this.showSoluce = false;
     });
   }
 

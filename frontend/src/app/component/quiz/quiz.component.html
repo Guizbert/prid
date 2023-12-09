@@ -8,9 +8,11 @@
         <div *ngIf="isTeacher" class="" >
             <p> teacher </p>
         </div>
+
         
-        <quizTraining [filter]="filter" [isTest]="true"></quizTraining>
         <quizTraining [filter]="filter" [isTest]="false"></quizTraining>
+
+        <quizTraining [filter]="filter" [isTest]="true"></quizTraining>
     </div>
 
 </div>
