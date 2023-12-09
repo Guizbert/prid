@@ -16,3 +16,10 @@
     <button (click)="delete()"    >Effacer    </button>
     <button (click)="voirSoluce()">Voir soluce</button>
 </div>
+
+<div  *ngIf="showSoluce">
+    <p><b>SOLUCES : </b></p>
+    <div *ngFor="let solution of solutions">
+        <p>{{ solution }}</p>
+    </div>
+</div>

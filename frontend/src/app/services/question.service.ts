@@ -1,5 +1,6 @@
 import { Injectable, Inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import { Subject, BehaviorSubject } from "rxjs";
 
 import { Quiz } from '../models/quiz';
 import { Question } from '../models/question';
@@ -10,6 +11,9 @@ import { plainToInstance } from 'class-transformer';
 @Injectable({ providedIn: 'root' })
 export class QuestionService{
     constructor(private http: HttpClient, @Inject('BASE_URL') private baseUrl: string) { }
+
+    private sqlSource = new BehaviorSubject<string>("");
+    public sql$ = this.sqlSource.asObservable();
 
     getAll(): Observable<Question[]> {
         return this.http.get<any[]>(`${this.baseUrl}api/question`).pipe(

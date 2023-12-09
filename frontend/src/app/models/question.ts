@@ -1,6 +1,7 @@
 import { Type } from "class-transformer";
 import 'reflect-metadata';
 import { Quiz } from "./quiz";
+import { Solution } from "./solution";
 
 
 export class Question{
@@ -12,6 +13,7 @@ export class Question{
     quizName?: string;
     quizIsTest?: boolean;
     quizdbName?: string;
+    solutions?: Solution[];
     
     get display(): string {
        
