@@ -38,7 +38,6 @@ export class QuizComponent implements OnInit, OnDestroy{
         this.state = this.stateService.quizListState;
     }
     ngOnInit(): void {
-        const filt = this.filter;
 
         if(this.authentification.currentUser?.role === Role.Teacher){
             this.isTeacher = true;

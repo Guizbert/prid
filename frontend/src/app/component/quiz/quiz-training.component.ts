@@ -72,13 +72,15 @@ export class QuizTrainingComponent implements OnInit,  AfterViewInit{
     }
 
     ngOnInit(): void {
+        // pour check si y a un attempt etc
         this.user = this.authenticationService.currentUser;
+        this.displayedColumns = !this.isTest ? ['name', 'database', 'statut',   'isTest', 'actions']
+                :['name', 'database', 'start', 'finish', 'statut', 'evaluation', 'isTest', 'actions'];
     }
 
 
     ngAfterViewInit() {
-        this.displayedColumns = !this.isTest ? ['name', 'database', 'statut',   'isTest', 'actions']
-                                    :['name', 'database', 'start', 'finish', 'statut', 'evaluation', 'isTest', 'actions'];
+      
         this.dataSource.paginator = this.paginator;
         this.dataSource.sort = this.sort;
         this.dataSource.filterPredicate = (data: Quiz, filter: string) => {

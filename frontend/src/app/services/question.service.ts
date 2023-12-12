@@ -46,8 +46,9 @@ export class QuestionService{
         return this.http.get<number[]>(`${this.baseUrl}api/question/getQuestionss/${id}`);
     }
     
-    querySent(query:string): Observable<string[][]> {
-        return this.http.get<string[][]>(`${this.baseUrl}api/question/querySent/${query}`);
+    querySent(query:string): Observable<any[][]> {
+        return this.http.get<any[][]>(`${this.baseUrl}api/question/querySent/${query}`);
     }
+  
   
 }

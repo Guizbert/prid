@@ -28,7 +28,19 @@ export class QuestionComponent implements OnInit, OnDestroy  {
   subscription: Subscription;
   showSoluce: boolean = false;
   answerGood: string = "";
+  //data a montrer
+  dataTable: string[] = []; //data
+  columnTable: string[] = []; //colonne
+  dataT: string[] =[];        //les deux réunis
+
+  resultQuery: string[]=[]; // pour vérfier si tout est bon a partir de la première solution
+  resultColumn:string[]=[];
+  resultData:string[]=[];
+
+  badQuery: boolean =false;
+  correctQuery: boolean =false;
   sent: boolean = false;
+  errors: string[] = [];
   user?: User ;
 
   @ViewChild("editor") editor!: CodeEditorComponent;
@@ -46,17 +58,23 @@ export class QuestionComponent implements OnInit, OnDestroy  {
     this.subscription = questionService.sql$.subscribe(sql1 => {
       this.sql = sql1;
     })
+    this.resultQuery = []; this.dataT = [];
 
   }
 
 
   ngOnInit(): void {
     const questionId = this.activatedRoute.snapshot.params['id'];
+   
     this.questionService.getById(questionId).subscribe(res => {
       this.question = res;
       this.quizid = this.question.quizId!;
       console.log(this.quizid);
+      for(let i = 0; i < this.question.solutions!.length; ++i){
+        this.solutions.push(this.question.solutions![i].sql!);
+      }
       this.loadOtherQuestion(this.question.quizId!);
+      
     });
   }
 
@@ -92,23 +110,27 @@ export class QuestionComponent implements OnInit, OnDestroy  {
   exit(){
     console.log("exit             <-");
     this.router.navigate(['/quiz']);
-
   }
+
   envoyer() {
     // Implement the refresh logic as needed
     console.log("send             <-");
     this.sent = true;
-    this.questionService.querySent(this.query).subscribe(
-      (data: string[][]) => {
-        // Assume that the data received is a two-dimensional array of strings
-        console.log(data);
-        // Utilisez les données reçues comme nécessaire dans votre composant
-      },
-      (error) => {
-        console.error(error);
-        // Handle the error if needed
-      }
-    );
+
+    const cleanedQuery = this.query.replace(/[\r\n]/g, ''); // enlève le \n pour éviter les erreurs 
+    if(cleanedQuery){
+      this.questionService.querySent(cleanedQuery).subscribe(
+        (data: any) => {
+          // Assume that the data received is a two-dimensional array of strings
+          this.dataT = data;                //toutes les data
+          this.dataTable =  data.data;      //que le contenu
+          this.columnTable = data.columns;  // que les colonnes
+          this.result();
+          // Utilisez les données reçues comme nécessaire dans votre composant
+        }
+      );
+    }
+    
   }
   
   delete(){
@@ -143,9 +165,48 @@ export class QuestionComponent implements OnInit, OnDestroy  {
       this.question = res;
       this.delete();
       this.answerGood = "";
+      this.columnTable = [];
+      //this.dataT = [];
+      this.dataTable= [];
+      this.correctQuery = false;
       console.log(this.question);
       this.showSoluce = false;
     });
+  }
+
+  result(){   //check si la query est correct ou non
+    if(this.solutions.length>0){
+      this.questionService.querySent(this.solutions[0]).subscribe(
+        (data: any) => {
+          // Assume that the data received is a two-dimensional array of strings
+          this.resultQuery = data;
+          this.resultData =  data.data;        
+          this.resultColumn = data.columns;
+          // Utilisez les données reçues comme nécessaire dans votre composant
+          if(this.resultColumn.length !== this.columnTable.length || this.resultColumn.length ==0){
+            this.errors.push("bad numbers of columns");this.badQuery=true;
+          }
+          if(this.resultData.length !== this.dataTable.length || this.dataTable.length ==0){
+            this.errors.push("bad numbers of rows"); this.badQuery=true;
+          }
+          else{
+            for(let i = 0 ; i < this.resultColumn.length; i++){
+              if(this.resultColumn[i] !== this.columnTable[i]){
+                this.errors.push("wrong data (columns)");this.badQuery=true;
+              }
+            }
+            for(let i = 0 ; i < this.resultData.length; ++i){
+              if(this.resultData[i] !== this.dataTable[i]){
+                console.log(this.resultData[i]+ "  <- result data \n" + this.dataTable[i] + " <- datatable data");
+                this.errors.push("wrong data (rows)");this.badQuery=true;
+              }
+            }
+            if(!this.errors){
+              this.correctQuery = true;
+            }
+          }
+        });
+    }
   }
 
   focus() {

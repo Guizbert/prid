@@ -22,9 +22,34 @@
     <p>{{answerGood}}</p>
 </div>
 
+<p *ngIf="correctQuery">
+    your Query is correct ! GG
+</p>
+<div class="errors" *ngIf="badQuery">
+    <p><b>ERROR :</b></p>
+    <div  *ngFor="let error of errors">
+        <p>{{ error }}</p>
+    </div>
+</div>
+
 <div  *ngIf="showSoluce">
     <p><b>SOLUCES : </b></p>
     <div *ngFor="let solution of solutions">
         <p>{{ solution }}</p>
     </div>
+</div>
+<table>
+    <thead>
+        <tr>
+            <th *ngFor="let column of columnTable "> {{column}}</th>
+        </tr>
+    </thead>
+    <tr *ngFor="let row of dataTable">
+        <td *ngFor="let data of row">
+            {{ data }}
+        </td>
+    </tr>
+</table>
+
+<div *ngIf="sent" >
 </div>

@@ -122,7 +122,7 @@ public class QuestionController : ControllerBase
     [AllowAnonymous]
     [Authorized(Role.Teacher, Role.Student, Role.Admin)]
     [HttpGet("querySent/{query}")]
-    public async Task<string[][]> Sql(string query)
+    public async Task<ActionResult<object>> Sql(string query)
     {
         // Your connection string, replace with actual details
         string connectionString = "server=localhost;database=fournisseurs;uid=root;password=root";
@@ -141,7 +141,6 @@ public class QuestionController : ControllerBase
         {
             // Handle the exception
             Console.WriteLine($"Error: {e.Message}");
-            return null;
         }
 
         // Get column names
@@ -175,8 +174,9 @@ public class QuestionController : ControllerBase
                 data[j][i] = str;
             }
         }
+        
 
-        return data;
+        return Ok(new { Columns = columns, Data = data });
     }
 
 
