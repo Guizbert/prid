@@ -14,11 +14,13 @@
 <div class="action">
     <button (click)="envoyer()"   >Envoyer    </button>
     <button (click)="delete()"    >Effacer    </button>
-    <button (click)="voirSoluce()">Voir soluce</button>
+    <button *ngIf="!isTest" (click)="voirSoluce()">Voir soluce</button>
 </div>
 
-<p *ngIf="correctQuery">
-    your Query is correct ! GG
+<p class="correct" *ngIf="correctQuery">
+    Votre requête a retourné une réponse correcte ! 
+    <br>
+    Néanmoins, comparez votre solution avec celle(s) ci-dessous pour voir si vous n'avez pas eu un peu de chance :)
 </p>
 <div class="errors" *ngIf="badQuery">
     <p><b>ERROR :</b></p>
@@ -27,22 +29,24 @@
     </div>
 </div>
 
-<div  *ngIf="showSoluce">
-    <p><b>SOLUCES : </b></p>
-    <div *ngFor="let solution of solutions">
-        <p>{{ solution }}</p>
+<div *ngIf="!isTest">
+    <table>
+        <thead>
+            <tr>
+                <th *ngFor="let column of columnTable "> {{column}}</th>
+            </tr>
+        </thead>
+        <tr *ngFor="let row of dataTable">
+            <td *ngFor="let data of row">
+                {{ data }}
+            </td>
+        </tr>
+    </table>
+    <div  *ngIf="showSoluce">
+        <p class="soluceTitle"><b>SOLUCES : </b></p>
+        <div class="soluce" *ngFor="let solution of solutions">
+            <p>{{ solution }}</p>
+        </div>
     </div>
 </div>
-<table>
-    <thead>
-        <tr>
-            <th *ngFor="let column of columnTable "> {{column}}</th>
-        </tr>
-    </thead>
-    <tr *ngFor="let row of dataTable">
-        <td *ngFor="let data of row">
-            {{ data }}
-        </td>
-    </tr>
-</table>
 

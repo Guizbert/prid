@@ -29,7 +29,7 @@ export class QuestionComponent implements OnInit, OnDestroy  {
   subscription: Subscription;
   showSoluce: boolean = false;
   database!: Database;
-  //isTest!: boolean = false;
+  isTest: boolean = false;
   //data a montrer
   dataTable: string[] = []; //data
   columnTable: string[] = []; //colonne
@@ -69,13 +69,18 @@ export class QuestionComponent implements OnInit, OnDestroy  {
     this.questionService.getById(questionId).subscribe(res => {
       this.question = res;
       console.log(this.question);
-      this.quizid = this.question.quizId!;
+      this.quizid = this.question.quizId!; 
       this.database! = this.question.database!;
+      this.quizService.isTestByid(this.question.quizId!).subscribe(res =>{
+        console.log(res);
+        this.isTest = res;
+      })   
       for(let i = 0; i < this.question.solutions!.length; ++i){
         this.solutions.push(this.question.solutions![i].sql!);
       }
       this.loadOtherQuestion(this.question.quizId!);
     });
+    
     // this.questionService.getColumns(this.database.name!).subscribe(res =>{
     //   this.editor.getColumsName(res);
     // })
@@ -128,7 +133,7 @@ export class QuestionComponent implements OnInit, OnDestroy  {
           this.dataTable =  data.data;      //que le contenu
           this.columnTable = data.columns;  // que les colonnes
           this.result();
-
+          this.voirSoluce();
           /** ============================================ */
           //faire la création de l'attempt et answer
         }

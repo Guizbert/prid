@@ -71,3 +71,14 @@
     color: red;
     font-size: 85%;
   }
+
+  .correct{
+    color: rgb(43, 100, 43);
+  }
+  .soluceTitle{
+    color: rgb(10, 131, 76);
+  }
+
+  .soluce{
+    color: rgb(43, 100, 43);
+  }

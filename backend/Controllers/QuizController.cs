@@ -82,6 +82,32 @@ public class QuizController : ControllerBase
             .ToListAsync());
     }
 
+    [AllowAnonymous]
+    [Authorized(Role.Teacher, Role.Student, Role.Admin)]
+    [HttpGet("isTestByid/{id}")]
+    public async Task<ActionResult<bool>> IsTest(int id)
+    {
+        bool isTest = await _context.Quizzes 
+            .Where(q => q.Id == id)
+            .Select(q => q.IsTest)
+            .FirstOrDefaultAsync();
+
+        return Ok(isTest);
+    }
+
+    [AllowAnonymous]
+    [Authorized(Role.Teacher, Role.Student, Role.Admin)]
+    [HttpGet("haveAttempt/{id}/{userId}")]
+    public async Task<ActionResult<bool>> HaveAttempt(int id,int userId)
+    {
+        bool hasAttempt = await _context.Quizzes
+            .Where(q => q.Id == id)
+            .Select(q => q.Attempts.Any(a => a.UserId == userId)) // Vérifie si l'utilisateur a déjà une tentative
+            .FirstOrDefaultAsync();
+
+        return Ok(hasAttempt);
+    }
+
  
 
 

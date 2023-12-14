@@ -26,6 +26,7 @@ export class QuizTrainingComponent implements OnInit,  AfterViewInit{
     displayedColumns: string[] = ['name', 'database', 'start', 'finish', 'statut', 'isTest', 'actions'];
     dataSource: MatTableDataSource<Quiz> = new MatTableDataSource();
     private user?: User | undefined ;
+    haveAttempt: boolean = false;
 
     private _question?: Question[] | null;
     get question(): Array<Question> | null {
@@ -97,6 +98,7 @@ export class QuizTrainingComponent implements OnInit,  AfterViewInit{
 
     attempt(quizid: number) {
         var haveAttempt;                    // <---------------------------------------------------- POUR VERIF SI IL FAUT FAIRE UNE NEW ATTEMPT OU PAS
+        
         this.questionService.getForQuiz(quizid).subscribe(response => {
             //console.log(response);
             this.router.navigate(['/question/'+response.id]);

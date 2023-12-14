@@ -40,6 +40,10 @@ export class QuizService{
         );
     }
 
+    isTestByid(id:number){
+        return this.http.get<any>(`${this.baseUrl}api/quiz/isTestByid/${id}`);
+    }
+
    
       
 }
