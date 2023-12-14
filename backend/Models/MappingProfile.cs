@@ -25,7 +25,8 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.Questions, opt => opt.MapFrom(src => src.Questions.Select(q => new Question { Id = q.Id, Order = q.Order, Body = q.Body, QuizId = q.QuizId })));
 
         CreateMap<Question, QuestionDTO>()
-            .ForMember(dest => dest.QuizName, opt => opt.MapFrom(src => src.Quiz.Name));
+            .ForMember(dest => dest.QuizName, opt => opt.MapFrom(src => src.Quiz.Name))
+            .ForMember(dest => dest.Database, opt => opt.MapFrom(src => src.Quiz.Database));
         CreateMap<QuestionDTO, Question>();
 
 

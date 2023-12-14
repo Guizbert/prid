@@ -65,10 +65,10 @@ public class QuestionController : ControllerBase
     public async Task<ActionResult<QuestionDTO>> GetOne(int id){
        var question = await _context.Questions
             .Include(q => q.Quiz) // Include the associated Quiz entity
-                .ThenInclude(q => q.Database)
+                .ThenInclude(quiz => quiz.Database)
             .Include(q => q.Solutions) // Include Solutions for the question
             .Include(q => q.Answers)
-            .ThenInclude(q => q.Attempts)
+                .ThenInclude(q => q.Attempts)
             .FirstOrDefaultAsync(q => q.Id == id);
 
         if (question == null)
@@ -119,13 +119,73 @@ public class QuestionController : ControllerBase
         return questionIds;
     }
 
+
     [AllowAnonymous]
     [Authorized(Role.Teacher, Role.Student, Role.Admin)]
-    [HttpGet("querySent/{query}")]
-    public async Task<ActionResult<object>> Sql(string query)
+    [HttpGet("getdata/{dbname}")]
+    public async Task<ActionResult<object>> GetSqldata(string dbname){
+        
+        string connectionString = $"server=localhost;database={dbname};uid=root;password=root";
+
+        using MySqlConnection connection = new MySqlConnection(connectionString);
+        List<string> tableNames = new List<string>();
+
+        try
+        {
+            connection.Open();
+            DataTable schema = connection.GetSchema("Tables");
+
+            foreach (DataRow row in schema.Rows)
+            {
+                string tableName = row["TABLE_NAME"].ToString();
+                tableNames.Add(tableName);
+            }
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine($"Error: {e.Message}");
+        }
+
+        return Ok(tableNames);
+
+    }
+    [AllowAnonymous]
+    [Authorized(Role.Teacher, Role.Student, Role.Admin)]
+    [HttpGet("GetAllColumnNames/{dbName}")]
+    public async Task<ActionResult<Dictionary<string, List<string>>>> GetAllColumnNames(string dbName)
+    {
+        string connectionString = $"server=localhost;database={dbName};uid=root;password=root";
+
+        using MySqlConnection connection = new MySqlConnection(connectionString);
+        List<string> columnNames = new List<string>();
+
+        try
+        {
+            connection.Open();
+            DataTable schema = connection.GetSchema("Columns");
+
+            foreach (DataRow row in schema.Rows)
+            {
+                string columnName = row["COLUMN_NAME"].ToString();
+                columnNames.Add(columnName);
+            }
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine($"Error: {e.Message}");
+        }
+
+        return Ok(columnNames);
+    }
+
+
+    [AllowAnonymous]
+    [Authorized(Role.Teacher, Role.Student, Role.Admin)]
+    [HttpGet("querySent/{query}/{dbname}")] // si je met {query} / {dbname} ça return une erreur mais renvoie les données correcte. si je met pas le dbname swagger refonctionne mais le front fonctionne plus bruh
+    public async Task<ActionResult<object>> Sql(string query, string dbname)
     {
         // Your connection string, replace with actual details
-        string connectionString = "server=localhost;database=fournisseurs;uid=root;password=root";
+        string connectionString = $"server=localhost;database={dbname};uid=root;password=root";
 
         using MySqlConnection connection = new MySqlConnection(connectionString);
         DataTable table = new DataTable();
@@ -147,6 +207,9 @@ public class QuestionController : ControllerBase
         string[] columns = new string[table.Columns.Count];
         for (int i = 0; i < table.Columns.Count; ++i)
             columns[i] = table.Columns[i].ColumnName;
+
+        Console.WriteLine("Columns: ");
+        Console.WriteLine(string.Join(", ", columns));
 
         // Get data
         string[][] data = new string[table.Rows.Count][];
@@ -174,8 +237,11 @@ public class QuestionController : ControllerBase
                 data[j][i] = str;
             }
         }
-        
-
+        Console.WriteLine("Data: ");
+        for (int j = 0; j < table.Rows.Count; ++j)
+        {
+            Console.WriteLine(string.Join(", <-ici data ", data[j]));
+        }
         return Ok(new { Columns = columns, Data = data });
     }
 

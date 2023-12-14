@@ -1,5 +1,5 @@
 import { Injectable, Inject } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Subject, BehaviorSubject } from "rxjs";
 
 import { Quiz } from '../models/quiz';
@@ -46,9 +46,15 @@ export class QuestionService{
         return this.http.get<number[]>(`${this.baseUrl}api/question/getQuestionss/${id}`);
     }
     
-    querySent(query:string): Observable<any[][]> {
-        return this.http.get<any[][]>(`${this.baseUrl}api/question/querySent/${query}`);
+    querySent(query: string, dbname: string): Observable<any> {
+        //console.log(options);
+        return this.http.get<any>(`${this.baseUrl}api/question/querySent/${query}/${dbname}`);
     }
+
+    getColumns(dbname:string):Observable<any[]>{
+        return this.http.get<any>(`${this.baseUrl}api/question/GetAllColumnNames/${dbname}`); 
+    }
+    
   
   
 }

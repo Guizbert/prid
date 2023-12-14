@@ -7,8 +7,8 @@ public class QuestionDTO{
     
     public int QuizId{get;set;}
     public string QuizName{get;set;} = null!;
+    public Database Database {get;set;} = null!;
 
-    public string QuizDbName {get;set;} = null!;
     public virtual ICollection<AnswerDTO> Answers {get;set;} = new List<AnswerDTO>();
     public virtual ICollection<SolutionDTO> Solutions {get;set;} = new HashSet<SolutionDTO>();
 

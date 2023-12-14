@@ -2,6 +2,7 @@ import { Type } from "class-transformer";
 import 'reflect-metadata';
 import { Quiz } from "./quiz";
 import { Solution } from "./solution";
+import { Database } from "./database";
 
 
 export class Question{
@@ -11,10 +12,10 @@ export class Question{
     body?: string;
     quizId?: number;
     quizName?: string;
-    quizIsTest?: boolean;
-    quizdbName?: string;
+    database?: Database;
     solutions?: Solution[];
-    
+    quizIsTest?: boolean;
+
     get display(): string {
        
         return `${this.quizName} ${this.order}  `;
@@ -24,8 +25,6 @@ export class Question{
         return `${this.body}`;
 
     }
-    
-
     // get evaluation(): number{
         
     // }

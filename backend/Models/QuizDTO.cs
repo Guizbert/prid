@@ -15,7 +15,8 @@ public class QuizDTO{
     public ICollection<Question> Questions {get;set;} = new List<Question>();
     public ICollection<Attempt> Attempts {get;set;} = new List<Attempt>();
    
-}
+ }
+
 
 // public class QuizWithQuestion : QuizDTO
 // {
@@ -24,5 +25,5 @@ public class QuizDTO{
 // public class QuizWithAttempt : QuizDTO{
 //         public ICollection<Attempt> Attempts {get;set;} = new HashSet<Attempt>();
 
-// }
+//  }
  

@@ -20,7 +20,6 @@ export class AuthenticationService {
     }
 
     login(pseudo: string, password: string): Observable<User> {
-        console.log(pseudo, password);
         return this.http.post<any>(`${this.baseUrl}api/users/authenticate`, { pseudo, password })
             .pipe(map(user => {
                 user = plainToClass(User, user);

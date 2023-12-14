@@ -1,9 +1,17 @@
 import { AfterViewInit, Component, ElementRef, Input, ViewChild, forwardRef } from "@angular/core";
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from "@angular/forms";
+import { QuestionService } from "src/app/services/question.service";
 
 import * as ace from "ace-builds";
 import "ace-builds/src-noconflict/mode-mysql";
 import "ace-builds/src-noconflict/ext-language_tools";
+import 'ace-builds/src-noconflict/theme-dracula';
+import 'ace-builds/src-noconflict/theme-monokai';
+import 'ace-builds/src-noconflict/theme-merbivore';
+import 'ace-builds/src-noconflict/theme-pastel_on_dark';
+import 'ace-builds/src-noconflict/theme-tomorrow_night_blue';
+import 'ace-builds/src-noconflict/theme-sqlserver';
+
 
 @Component({
     selector: "code-editor",
@@ -39,7 +47,9 @@ export class CodeEditorComponent implements AfterViewInit, ControlValueAccessor 
     permet à un composant d'agir comme un contrôle Angular.
     */
 
-    constructor() { }
+    constructor(
+        private questionService: QuestionService
+        ) { }
 
     // permet d'accéder à l'objet DOM qui correspond au DIV qui contient l'éditeur
     @ViewChild("editor") private _editor!: ElementRef<HTMLElement>;
@@ -51,9 +61,10 @@ export class CodeEditorComponent implements AfterViewInit, ControlValueAccessor 
     private _readOnly: boolean = false;
     // contient la fonction de callback qui sera appelée quand la valeur de l'éditeur change
     private _onChange: any;
-
+    completion: any[] = [];
     //nom de la db a utiliser:
     private _dbName: string ="";
+
     ngAfterViewInit(): void {
         ace.config.set("fontSize", "1.5rem");
         this._aceEditor = ace.edit(this._editor.nativeElement);
@@ -74,6 +85,9 @@ export class CodeEditorComponent implements AfterViewInit, ControlValueAccessor 
             this._code = this._aceEditor!.getValue();
             this._onChange(this._code);
         });
+        this.setTheme('ace/theme/dracula');
+        console.log("theme : " + this._aceEditor.getTheme());
+
         this._aceEditor.setValue(this._code, -1);
         this._aceEditor.resize();
         // Configuration de la complétion automatique
@@ -95,14 +109,14 @@ export class CodeEditorComponent implements AfterViewInit, ControlValueAccessor 
                     // Crée un tableau pour stocker les différents types de complétions.
                     const completions: any[] = [];
 
-                    // Pour chaque nom de table, ajoute une complétion.
+                    //Pour chaque nom de table, ajoute une complétion.
                     tables.forEach((table: any) => {
-                        completions.push({caption: table, value: table, meta: "Table", score: 100});
+                       completions.push({caption: table, value: table, meta: "Table", score: 100});
                     });
-
+//
                     // Pour chaque colonne, ajoute une complétion.
                     columns.forEach((column: any) => {
-                        completions.push({caption: column, value: column, meta: "Column", score: 100});
+                       completions.push({caption: column, value: column, meta: "Column", score: 100});
                     });
 
                     // Pour chaque mot-clé, ajoute une complétion.
@@ -124,6 +138,19 @@ export class CodeEditorComponent implements AfterViewInit, ControlValueAccessor 
      */
     private static getTableNames() {
         return ["SPJ", "S", "P", "J"];
+    }
+    public  getTablesName(e:any[]) {
+        if(this.completion.length >0) this.completion = [];
+        e.forEach((table: any) => {
+            this.completion.push({caption: table, value: table, meta: "Table", score: 100});
+        });
+    }
+    
+    public  getColumsName(e :any[]) {
+        if(this.completion.length >0) this.completion = [];
+        e.forEach((column: any) => {
+            this.completion.push({caption: column, value: column, meta: "Column", score: 100});
+        });
     }
 
     /**
@@ -160,6 +187,13 @@ export class CodeEditorComponent implements AfterViewInit, ControlValueAccessor 
         ];
     }
 
+
+    // Dans votre composant CodeEditorComponent
+    setTheme(theme: string): void {
+        if (this._aceEditor) {
+            this._aceEditor.setTheme(theme);
+        }
+    }
     /*
      * Implémentation de l'interface ControlValueAccessor
      */
