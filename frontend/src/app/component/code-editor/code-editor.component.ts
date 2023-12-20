@@ -11,6 +11,7 @@ import 'ace-builds/src-noconflict/theme-merbivore';
 import 'ace-builds/src-noconflict/theme-pastel_on_dark';
 import 'ace-builds/src-noconflict/theme-tomorrow_night_blue';
 import 'ace-builds/src-noconflict/theme-sqlserver';
+import { Database } from "src/app/models/database";
 
 
 @Component({
@@ -49,7 +50,9 @@ export class CodeEditorComponent implements AfterViewInit, ControlValueAccessor 
 
     constructor(
         private questionService: QuestionService
-        ) { }
+        ) {
+            CodeEditorComponent._questionService = questionService;  // Initialisez la propriété statique
+        }
 
     // permet d'accéder à l'objet DOM qui correspond au DIV qui contient l'éditeur
     @ViewChild("editor") private _editor!: ElementRef<HTMLElement>;
@@ -63,7 +66,16 @@ export class CodeEditorComponent implements AfterViewInit, ControlValueAccessor 
     private _onChange: any;
     completion: any[] = [];
     //nom de la db a utiliser:
-    private _dbName: string ="";
+    private static _database: Database;
+
+    get database(): Database  {
+        return CodeEditorComponent._database!;
+    }
+    @Input() set database(value: Database) {
+        CodeEditorComponent._database = value;
+    }
+    
+    private static _questionService: QuestionService;  
 
     ngAfterViewInit(): void {
         ace.config.set("fontSize", "1.5rem");
@@ -94,7 +106,7 @@ export class CodeEditorComponent implements AfterViewInit, ControlValueAccessor 
         ace.config.loadModule("ace/ext/language_tools", function () {
             const langTools = ace.require("ace/ext/language_tools");
             langTools.addCompleter({
-                getCompletions: (editor:any, session: any, pos: any, prefix: any, callback: any) => {
+                getCompletions: async (editor:any, session: any, pos: any, prefix: any, callback: any) => {
                     // Si le préfixe (texte précédant la position du curseur) est vide, il n'y a aucune suggestion.
                     if (prefix.length === 0) {
                         callback(null, []);
@@ -102,9 +114,12 @@ export class CodeEditorComponent implements AfterViewInit, ControlValueAccessor 
                     }
 
                     // Récupère les noms des tables, des colonnes et des mots-clés.
-                    const tables = CodeEditorComponent.getTableNames();
-                    const columns = CodeEditorComponent.getColumnNames();
+                    const tables = await CodeEditorComponent.getTableNames(CodeEditorComponent._database.name!);
+                    const columns = await CodeEditorComponent.getColumnNames(CodeEditorComponent._database.name!);
                     const keywords = CodeEditorComponent.getKeywords();
+
+                    columns.forEach((a:any) => { console.log('Column:', a); });
+                    tables.forEach((a : any) => { console.log('Table:', a); });
 
                     // Crée un tableau pour stocker les différents types de complétions.
                     const completions: any[] = [];
@@ -124,6 +139,7 @@ export class CodeEditorComponent implements AfterViewInit, ControlValueAccessor 
                         completions.push({caption: keyword, value: keyword, meta: "Keyword", score: 75});
                     });
 
+                    console.log(completions);
                     // Appelle la fonction de callback avec les suggestions d'achèvement.
                     callback(null, completions);
                 }
@@ -131,36 +147,25 @@ export class CodeEditorComponent implements AfterViewInit, ControlValueAccessor 
         });
     }
 
-    /**
-     * Renvoie un tableau contenant les noms des tables SQL a afficher dans la complétion.
-     * 
-     * **TODO: Ici, géré de manière statique, mais devrait être dynamique en fonction de la BD ciblée.**
-     */
-    private static getTableNames() {
-        return ["SPJ", "S", "P", "J"];
-    }
-    public  getTablesName(e:any[]) {
-        if(this.completion.length >0) this.completion = [];
-        e.forEach((table: any) => {
-            this.completion.push({caption: table, value: table, meta: "Table", score: 100});
+    private static getTableNames(dbname: string): Promise<any[]> {
+        return new Promise<any[]>((resolve) => {
+            CodeEditorComponent._questionService.getData(dbname).subscribe((res: any)=> {
+                console.log("res get col : " + res);
+                resolve(res);
+            });
         });
     }
     
-    public  getColumsName(e :any[]) {
-        if(this.completion.length >0) this.completion = [];
-        e.forEach((column: any) => {
-            this.completion.push({caption: column, value: column, meta: "Column", score: 100});
+    private static getColumnNames(dbname: string): Promise<any[]> {
+        return new Promise<any[]>((resolve) => {
+            CodeEditorComponent._questionService.getColumns(dbname).subscribe((res: any)=> {
+                console.log("res get data : " + res);
+                resolve(res);
+            });
         });
     }
-
-    /**
-     * Renvoie un tableau contenant les noms des colonnes des tables SQL a afficher dans la complétion.
-     * 
-     * **TODO: Ici, géré de manière statique, mais devrait être dynamique en fonction de la BD ciblée.**
-     */
-    private static getColumnNames() {
-        return ["ID_S", "ID_P", "ID_J", "PNAME", "COLOR", "CITY", "JNAME", "SNAME", "STATUS", "WEIGHT", "QTY", "DATE_DERNIERE_LIVRAISON"];
-    }
+    
+    
 
     /**
      * Renvoie un tableau contenant les mots-clés du langage SQL a afficher dans la complétion.
