@@ -8,6 +8,7 @@ using System.Text;
 using Microsoft.IdentityModel.Tokens;
 using System.Security.Claims;
 using prid_2324_a12.Helpers;
+using System.Collections;
 
 namespace prid_2324_a12.Controllers;
 
@@ -26,6 +27,8 @@ public class QuizController : ControllerBase
         _context = context;
         _mapper =mapper; 
     }
+
+    private async Task<User?> GetLoggedMember() => await _context.Users.FindAsync(User!.Identity!.Name);
 
     [AllowAnonymous]
     [HttpGet]
@@ -54,22 +57,93 @@ public class QuizController : ControllerBase
 
     [AllowAnonymous]
     [Authorized(Role.Teacher, Role.Student, Role.Admin)]
-    [HttpGet("test")]
-    public async Task<ActionResult<IEnumerable<QuizDTO>>> GetTest(){
-        return _mapper.Map<List<QuizDTO>>(await _context.Quizzes.Where(q=>q.IsTest ==true)
+    [HttpGet("test/{userId}")]
+    public async Task<ActionResult<IEnumerable<QuizDTO>>> GetTest(int userId){
+
+        var test =  await _context.Quizzes
+            .Where(q => q.IsTest == true)
             .Include(q => q.Database)
-            .OrderBy(q => q.Name).ToListAsync());
+            //.Include(q => q.Attempts)
+            .OrderBy(q => q.Name)
+            .ToListAsync();
+
+        await UpdateQuizStatusForCurrentUser(test,userId);
+
+        return _mapper.Map<List<QuizDTO>>(test);
+
     }
 
     
     [AllowAnonymous]
     [Authorized(Role.Teacher, Role.Student, Role.Admin)]
-    [HttpGet("quizzes")]
-    public async Task<ActionResult<IEnumerable<QuizDTO>>> GetQuiz(){
-        return _mapper.Map<List<QuizDTO>>(await _context.Quizzes.Where(q=>q.IsTest ==false)
-        .Include(q => q.Database)
-        //.Include(q => q.IsTest)
-        .OrderBy(q => q.Name).ToListAsync());
+    [HttpGet("quizzes/{userId}")]
+    public async Task<ActionResult<IEnumerable<QuizDTO>>> GetQuiz(int userId)
+    {
+
+        var quizzes = await _context.Quizzes
+            .Where(q => q.IsTest == false)
+            .Include(q => q.Database)
+            //.Include(q => q.Attempts)
+            .OrderBy(q => q.Name)
+            .ToListAsync();
+        // Update quiz status based on attempts
+        await UpdateQuizStatusForCurrentUser(quizzes, userId);
+
+        return _mapper.Map<List<QuizDTO>>(quizzes);
+    }
+
+
+    [AllowAnonymous]
+    private async Task UpdateQuizStatusForCurrentUser(List<Quiz> quizzes, int userId)
+    {
+        DateTimeOffset today = DateTimeOffset.Now;
+
+        if (userId == null)
+        {
+            return;
+        }
+
+        foreach (var quiz in quizzes)
+        {
+            if(quiz.Finish < today){
+                quiz.Statut = Statut.CLOTURE;
+                quiz.IsClosed = true;
+            }
+            else{
+                var attempt = await _context.Attempts
+                    .FirstOrDefaultAsync(a => a.QuizId == quiz.Id && a.UserId == userId);
+
+
+                if (attempt != null)
+                {
+                    quiz.HaveAttempt = true;
+                    Console.WriteLine("quiz : " + quiz.Id + "have attempt :  "+quiz.HaveAttempt);
+                    if(attempt.Finish != null ){
+                        quiz.Statut = Statut.FINI;
+                        if(quiz.IsTest){
+                            
+                            var totalQuestions = await _context.Questions
+                                                        .Where(q => q.QuizId == quiz.Id)
+                                                        .CountAsync();
+                            var correctAnswersCount = await _context.Answers
+                                                        .Where(a => a.AttemptId == attempt.Id && a.IsCorrect)
+                                                        .CountAsync();
+                            
+                            quiz.Note = ((correctAnswersCount * 10)/ totalQuestions) ;
+                        }
+                    }
+                    else
+                        quiz.Statut = Statut.EN_COURS;
+                    quiz.HaveAttempt = true;
+
+                    // Update quiz status based on attempt
+                    //quiz.Status = attempt.Status;
+                }else
+                    quiz.Statut = Statut.PAS_COMMENCE;
+                Console.WriteLine("statut : " + quiz.Statut);
+
+            }
+        }
     }
 
     [AllowAnonymous]
@@ -97,20 +171,61 @@ public class QuizController : ControllerBase
 
     [AllowAnonymous]
     [Authorized(Role.Teacher, Role.Student, Role.Admin)]
-    [HttpGet("haveAttempt/{id}/{userId}")]
-    public async Task<ActionResult<bool>> HaveAttempt(int id,int userId)
+    [HttpGet("haveAttempt/{quizId}/{userId}")]
+    public async Task<ActionResult<bool>> HaveAttempt(int quizId,int userId)
     {
         bool hasAttempt = await _context.Quizzes
-            .Where(q => q.Id == id)
+            .Where(q => q.Id == quizId)
             .Select(q => q.Attempts.Any(a => a.UserId == userId)) // Vérifie si l'utilisateur a déjà une tentative
             .FirstOrDefaultAsync();
 
         return Ok(hasAttempt);
     }
 
- 
+    [AllowAnonymous]
+    [Authorized(Role.Teacher, Role.Student, Role.Admin)]
+    [HttpGet("getAttempt/{quizId}/{userId}")]
+    public async Task<ActionResult<AttemptDTO>> GetAttempt(int quizId, int userId)
+    {
+        var attempt = await _context.Quizzes
+            .Where(q => q.Id == quizId)
+            .SelectMany(q => q.Attempts)
+            .FirstOrDefaultAsync(a => a.UserId == userId);
+
+        if (attempt == null)
+        {
+            return NotFound(); // or any other appropriate status code
+        }
 
 
+        return Ok(attempt);
+    }
+
+
+    [AllowAnonymous]
+    [Authorized(Role.Teacher, Role.Student, Role.Admin)]
+    [HttpPost("newAttempt/{quizId}/{userId}")]
+    public async Task<ActionResult<AttemptDTO>> newAttempt(int quizId, int userId)
+    {
+        var newAttempt = new Attempt
+            {
+                Start = DateTimeOffset.Now,
+                UserId = userId,
+                QuizId = quizId,
+            };
+        _context.Attempts.Add(newAttempt);
+        await _context.SaveChangesAsync();
+        var attemptDTO = new AttemptDTO
+            {
+                Id = newAttempt.Id,
+                Start = newAttempt.Start,
+                Finish = newAttempt.Finish,
+                UserId = newAttempt.UserId,
+                QuizId = newAttempt.QuizId,
+                // You might want to include Answers here as well if needed
+            };
+        return Ok(attemptDTO);
+    } 
 
 //faire le put pour la modif
 
