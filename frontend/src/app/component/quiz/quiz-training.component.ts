@@ -1,6 +1,6 @@
 import { Component, OnInit, ViewChild, AfterViewInit, ElementRef, OnDestroy, Input, OnChanges,SimpleChanges } from '@angular/core';
-import { User } from "src/app/models/user";
-import { Quiz } from "src/app/models/quiz";
+import { Role, User } from "src/app/models/user";
+import { Quiz, Statut } from "src/app/models/quiz";
 import * as _ from 'lodash-es';
 import { QuizService } from "src/app/services/quiz.service";
 import { QuestionService } from 'src/app/services/question.service';
@@ -25,8 +25,9 @@ import { Question } from 'src/app/models/question';
 export class QuizTrainingComponent implements OnInit,  AfterViewInit{
     displayedColumns: string[] = ['name', 'database', 'start', 'finish', 'statut', 'isTest', 'actions'];
     dataSource: MatTableDataSource<Quiz> = new MatTableDataSource();
-    private user?: User | undefined ;
-    haveAttempt: boolean = false;
+    private user!: User | undefined ;
+    haveAnAttempt: boolean = false;
+    isAdmin: boolean = false;
 
     private _question?: Question[] | null;
     get question(): Array<Question> | null {
@@ -75,6 +76,7 @@ export class QuizTrainingComponent implements OnInit,  AfterViewInit{
     ngOnInit(): void {
         // pour check si y a un attempt etc
         this.user = this.authenticationService.currentUser;
+        this.isAdmin = this.user?.role == Role.Teacher
         this.displayedColumns = !this.isTest ? ['name', 'database', 'statut',   'isTest', 'actions']
                 :['name', 'database', 'start', 'finish', 'statut', 'evaluation', 'isTest', 'actions'];
     }
@@ -96,30 +98,45 @@ export class QuizTrainingComponent implements OnInit,  AfterViewInit{
     }
     
 
-    attempt(quizid: number) {
-        var haveAttempt;                    // <---------------------------------------------------- POUR VERIF SI IL FAUT FAIRE UNE NEW ATTEMPT OU PAS
-        
-        this.questionService.getForQuiz(quizid).subscribe(response => {
+    attempt(quizid: number) {        
+        this.questionService.getForQuiz(quizid).subscribe(response => { // <- ici renvoyer quizId et user id pour check si attempt, si non -> new attempt
             //console.log(response);
             this.router.navigate(['/question/'+response.id]);
         });
+    }
+    newAttempt(quizId:number){
+        console.log(quizId); console.log(" user ->  "+ this.user!.id);
+        this.quizService.newAttempt(quizId, this.user!.id).subscribe(
+            res => {
+                this.quizService.attemptId = res.id!;
+                console.log("RESSSSSSSSSSSSSSSSSSSSSS");
+                console.log(res);
+            }
+        );
+        this.attempt(quizId);
     }
     
     
     edit(quiz: Quiz) {
         console.log(quiz);
-    }
+    }   
 
     refresh(){
         if(this._isTest){
-            this.quizService.getTest().subscribe(quizzes => {
+            this.quizService.getTest(this.user!.id).subscribe(quizzes => {
+                quizzes.forEach(res => {
+                    console.log(res);
+                    
+                })
                 this.dataSource.data = quizzes;
                 this.filter = this.state.filter;
             })
         }else
-        {    this.quizService.getQuizzes().subscribe(quizzes => {
+        {    this.quizService.getQuizzes(this.user!.id).subscribe(quizzes => {
                 this.dataSource.data = quizzes;
-                //this.state.restoreState(this.dataSource); <-
+                quizzes.forEach(res => {
+                    console.log(res);
+                })
                 this.filter = this.state.filter;
             })
         }
