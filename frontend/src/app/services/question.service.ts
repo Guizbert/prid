@@ -46,15 +46,18 @@ export class QuestionService{
         return this.http.get<number[]>(`${this.baseUrl}api/question/getQuestionss/${id}`);
     }
     
-    querySent(query: string, dbname: string): Observable<any> {
+    querySent(questionId:number,query: string, dbname: string): Observable<any> {
         //console.log(options);
-        return this.http.get<any>(`${this.baseUrl}api/question/querySent/${query}/${dbname}`);
+        return this.http.post<any>(`${this.baseUrl}api/question/querySent`, {questionId,query, dbName:dbname});
     }
 
     getColumns(dbname:string):Observable<any[]>{
-        return this.http.get<any>(`${this.baseUrl}api/question/GetAllColumnNames/${dbname}`); 
+        return this.http.get<any[]>(`${this.baseUrl}api/question/GetAllColumnNames/${dbname}`); 
     }
-    
-  
+    getData(dbname:string):Observable<any[]>{
+        return this.http.get<any[]>(`${this.baseUrl}api/question/getdata/${dbname}`); 
+    }
+
+
   
 }
