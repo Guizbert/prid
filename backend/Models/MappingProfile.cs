@@ -13,16 +13,21 @@ public class MappingProfile : Profile
 
         CreateMap<User, UserDTO>();
         CreateMap<UserDTO, User>()
-            .ForMember(dst => dst.RefreshToken, opt => opt.Ignore());
+            .ForMember(dst => dst.RefreshToken, opt => opt.Ignore())
+            .ForMember(dst => dst.Attempts, opt => opt.MapFrom(src => src.Attempts));
 
         CreateMap<User, UserWithPasswordDTO>();
         CreateMap<UserWithPasswordDTO, User>();
 
         CreateMap<Quiz, QuizDTO>()
-            .ForMember(dest => dest.Questions, opt => opt.MapFrom(src => src.Questions));
+            .ForMember(dest => dest.Questions, opt => opt.MapFrom(src => src.Questions))
+            .ForMember(dst => dst.Attempts, opt => opt.MapFrom(src => src.Attempts));
+
 
         CreateMap<QuizDTO, Quiz>()
-            .ForMember(dest => dest.Questions, opt => opt.MapFrom(src => src.Questions.Select(q => new Question { Id = q.Id, Order = q.Order, Body = q.Body, QuizId = q.QuizId })));
+            .ForMember(dest => dest.Questions, opt => opt.MapFrom(src => src.Questions.Select(q => new Question { Id = q.Id, Order = q.Order, Body = q.Body, QuizId = q.QuizId })))
+            .ForMember(dst => dst.Attempts, opt => opt.MapFrom(src => src.Attempts));
+
 
         CreateMap<Question, QuestionDTO>()
             .ForMember(dest => dest.QuizName, opt => opt.MapFrom(src => src.Quiz.Name))
@@ -35,6 +40,11 @@ public class MappingProfile : Profile
 
         CreateMap<Answer, AnswerDTO>();
         CreateMap<AnswerDTO, Answer>();
-       
+
+        CreateMap<Attempt, AttemptDTO>()
+            .ForMember(dest => dest.Answers, opt=>opt.MapFrom(src => src.Answers));
+        CreateMap<AttemptDTO, Attempt>()
+            .ForMember(dest => dest.Answers, opt=>opt.MapFrom(src => src.Answers));
+
     }
 }

@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 
 
 namespace prid_2324_a12.Models;
@@ -15,10 +16,10 @@ public class Attempt {
     public User User{get;set;} = null!;
     public int UserId {get;set;}
 
-    [ForeignKey(nameof(QuizId))]
+    [ForeignKey(nameof(QuizId))]   [JsonIgnore]
     public Quiz Quiz {get;set;} = null!;
     public int QuizId {get;set;}
 
-    //public virtual ICollection<Answer> Answers {get;set;}= new HashSet<Answer>();
+    public virtual ICollection<Answer> Answers {get;set;}= new HashSet<Answer>();
 
 }

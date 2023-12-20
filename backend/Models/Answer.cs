@@ -11,12 +11,14 @@ public class Answer {
     public string Sql {get; set;} = null!;
     public DateTimeOffset? TimeStamp {get; set;}
     public bool IsCorrect {get; set;}
+    
     [ForeignKey(nameof(AttemptId))]
     public Attempt Attempt{get;set;}= null!;
     public int AttemptId{get;set;}
+
     [ForeignKey(nameof(QuestionId))]
     public Question Question {get;set;} = null!;
     public int QuestionId{get;set;}
 
-    public virtual ICollection<Attempt> Attempts {get;set;}= new HashSet<Attempt>();
+    //public virtual ICollection<Attempt> Attempts {get;set;}= new HashSet<Attempt>();
 }

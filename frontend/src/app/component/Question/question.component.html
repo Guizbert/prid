@@ -8,8 +8,9 @@
     <button type="button" (click)="exit()" class="exit">&times;</button>
 </div>
 <p class="exo"> {{ question?.body}} </p>
+<!-- mettre un parametre avec le database name et return les col et data dans le cod-editor component -->
 
-<code-editor #editor [(ngModel)]="query" ></code-editor>
+<code-editor #editor [(ngModel)]="query" [database]="database"></code-editor> 
 
 <div class="action">
     <button (click)="envoyer()"   >Envoyer    </button>
@@ -45,7 +46,7 @@
     <div  *ngIf="showSoluce">
         <p class="soluceTitle"><b>SOLUCES : </b></p>
         <div class="soluce" *ngFor="let solution of solutions">
-            <p>{{ solution }}</p>
+           <pre> {{ solution }}</pre>
         </div>
     </div>
 </div>

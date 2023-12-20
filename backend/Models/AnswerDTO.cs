@@ -7,6 +7,6 @@ public class AnswerDTO{
     public bool IsCorrect {get; set;}
     public int AttemptId{get;set;}
 
-    public virtual ICollection<AttemptDTO> Attempts {get;set;}= new HashSet<AttemptDTO>();
+    //public virtual ICollection<AttemptDTO> Attempts {get;set;}= new HashSet<AttemptDTO>();
 
 }

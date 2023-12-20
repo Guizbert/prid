@@ -74,6 +74,7 @@ public class UsersController : ControllerBase
         return _mapper.Map<List<UserDTO>>(await _context.Users.ToListAsync());
     }
 
+    [AllowAnonymous]
     [HttpGet("{id}")]
     public async Task<ActionResult<UserDTO>> GetOne(int id) {
         // Récupère en BD le membre dont le pseudo est passé en paramètre dans l'url
@@ -113,6 +114,7 @@ public class UsersController : ControllerBase
         //peut ecrire Ok(_mapper.Map<UserDTO> (user);) mais pas besoin normalement
     }
 
+    [AllowAnonymous]
     [HttpGet("byEmail/{email}")]
     public async Task<ActionResult<UserDTO>> GetByEmail(string email) {
         var user = await _context.Users.SingleOrDefaultAsync(m => m.Email == email); // en cherche un seul 

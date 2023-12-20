@@ -9,7 +9,9 @@ public class QuizDTO{
     public bool IsPublished {get;set;}
     public bool IsClosed {get;set;}    
     public bool IsTest {get; set;}
-    // public Statut Statut{get;set;}
+    public bool HaveAttempt{get;set;}
+    public Statut Statut{get;set;}
+    public int Note{get;set;}
     public DateTimeOffset? Start {get;set;}
     public DateTimeOffset? Finish {get;set;}
     public ICollection<Question> Questions {get;set;} = new List<Question>();

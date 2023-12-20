@@ -50,6 +50,15 @@ public class MsnContext : DbContext
             .IsUnique();
         modelBuilder.Entity<Attempt>()
             .HasOne(a => a.User);
+        modelBuilder.Entity<Attempt>()
+            .HasOne(a => a.Quiz);
+
+        modelBuilder.Entity<Attempt>()
+            .HasMany(a => a.Answers)
+            .WithOne(an => an.Attempt)
+            .OnDelete(DeleteBehavior.ClientCascade);
+        modelBuilder.Entity<Attempt>()
+            .HasOne(a => a.Quiz);
         /***** ANSWER *****/
         modelBuilder.Entity<Answer>()
             .Property(a => a.Id)
@@ -185,20 +194,20 @@ public class MsnContext : DbContext
             new Question { Id = 10, QuizId = 2, Order = 4, Body = "Affichez le nom des projets fournis par le fournisseur S1" },
             new Question { Id = 11, QuizId = 2, Order = 5, Body = "Affichez le nom des fournisseurs qui ont fait au moins une livraison d'entre 150 et 250 pièces" },
             new Question { Id = 12, QuizId = 2, Order = 6, Body = @"On souhaite obtenir l'affichage des livraisons avec le nom du fournisseur à la place de son identifiant, 
-                ainsi que le nom de la pièce à la place de son identifiant et le nom du projet à la place de son identifiant.
-
-                La date de dernière livraison ne doit pas figurer dans le résultat.
-
-                Par contre l'entête affichée doit être `NOM`, `PIECE`, `PROJET` et `QUANTITE`.
-
-                Par exemple : 
-
-                NOM    PIECE    PROJET    QUANTITE
-                Smith  Nut      Sorter    200
-                Smith  Nut      Console   700
-                …      …        …         … 
-                " 
-                     },
+                            ainsi que le nom de la pièce à la place de son identifiant et le nom du projet à la place de son identifiant.
+            
+                            La date de dernière livraison ne doit pas figurer dans le résultat.
+            
+                            Par contre l'entête affichée doit être `NOM`, `PIECE`, `PROJET` et `QUANTITE`.
+            
+                            Par exemple : 
+            
+                            NOM    PIECE    PROJET    QUANTITE
+                            Smith  Nut      Sorter    200
+                            Smith  Nut      Console   700
+                            …      …        …         … 
+                            " 
+                        },
             new Question { Id = 13, QuizId = 2, Order = 7, Body = @"Même requête où l'on ne garde que les fournisseurs de Paris" },
             new Question { Id = 14, QuizId = 2, Order = 8, Body = @"Affichez les villes des projets où le fournisseur Adams a livré.
                                                                 Attention, vous ne pouvez pas faire d'hypothèse sur les données : vous ne pouvez pas considérer que Adams est le fournisseur S5." },
@@ -259,9 +268,7 @@ public class MsnContext : DbContext
                         
         );
 
-
-
-         modelBuilder.Entity<Question>().HasData(
+        modelBuilder.Entity<Question>().HasData(
             new Question { Id = 20, QuizId = 3, Order = 1, Body = @"Affichez le nom des personnes qui ont plus de trente ans" }
         );
         modelBuilder.Entity<Solution>().HasData(
@@ -309,7 +316,6 @@ public class MsnContext : DbContext
         );
     }
 
-
     public DbSet<User> Users => Set<User>();
     public DbSet<Answer> Answers => Set<Answer>();
     public DbSet<Attempt> Attempts => Set<Attempt>();
@@ -317,6 +323,5 @@ public class MsnContext : DbContext
     public DbSet<Question> Questions => Set<Question>();
     public DbSet<Quiz> Quizzes => Set<Quiz>();
     public DbSet<Solution> Solutions => Set<Solution>();
-
     
 }

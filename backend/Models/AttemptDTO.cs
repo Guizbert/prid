@@ -6,7 +6,8 @@ public class AttemptDTO
     public int Id {get; set;}
     public DateTimeOffset? Start { get; set;}
     public DateTimeOffset? Finish {get; set;}
-    public User user{get;set;} = null!;
-   // public virtual ICollection<AnswerDTO> Answers {get;set;} = new List<AnswerDTO>();
+    public int QuizId{get;set;}
+    public int UserId{get;set;}
+    public virtual ICollection<AnswerDTO> Answers {get;set;} = new List<AnswerDTO>();
 
 }
