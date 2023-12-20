@@ -20,6 +20,7 @@ namespace prid_2324_a12.Controllers;
 public class QuestionController : ControllerBase
 {
     //faire function getQuiz (non test) et getTest
+    private async Task<User?> GetLoggedMember() => await _context.Users.FindAsync(User!.Identity!.Name);
 
     private readonly MsnContext _context;
     private readonly IMapper _mapper;
@@ -64,11 +65,10 @@ public class QuestionController : ControllerBase
     [HttpGet("byId/{id}")]
     public async Task<ActionResult<QuestionDTO>> GetOne(int id){
        var question = await _context.Questions
-            .Include(q => q.Quiz) // Include the associated Quiz entity
+            .Include(q => q.Quiz)
                 .ThenInclude(quiz => quiz.Database)
-            .Include(q => q.Solutions) // Include Solutions for the question
+            .Include(q => q.Solutions)
             .Include(q => q.Answers)
-                .ThenInclude(q => q.Attempts)
             .FirstOrDefaultAsync(q => q.Id == id);
 
         if (question == null)
@@ -123,7 +123,7 @@ public class QuestionController : ControllerBase
     [AllowAnonymous]
     [Authorized(Role.Teacher, Role.Student, Role.Admin)]
     [HttpGet("getdata/{dbname}")]
-    public async Task<ActionResult<object>> GetSqldata(string dbname){
+    public async Task<ActionResult<Dictionary<string, List<string>>>> getdata(string dbname){
         
         string connectionString = $"server=localhost;database={dbname};uid=root;password=root";
 
@@ -146,9 +146,9 @@ public class QuestionController : ControllerBase
             Console.WriteLine($"Error: {e.Message}");
         }
 
-        return Ok(tableNames);
-
+        return Ok(tableNames); 
     }
+
     [AllowAnonymous]
     [Authorized(Role.Teacher, Role.Student, Role.Admin)]
     [HttpGet("GetAllColumnNames/{dbName}")]
@@ -178,71 +178,45 @@ public class QuestionController : ControllerBase
         return Ok(columnNames);
     }
 
-
+// faire ça dans le model question avec les fonctions du front
     [AllowAnonymous]
     [Authorized(Role.Teacher, Role.Student, Role.Admin)]
-    [HttpGet("querySent/{query}/{dbname}")] // si je met {query} / {dbname} ça return une erreur mais renvoie les données correcte. si je met pas le dbname swagger refonctionne mais le front fonctionne plus bruh
-    public async Task<ActionResult<object>> Sql(string query, string dbname)
-    {
-        // Your connection string, replace with actual details
-        string connectionString = $"server=localhost;database={dbname};uid=root;password=root";
+    [HttpPost("querySent")]
+    public async Task<ActionResult<object>> Sql(SqlDTO sqldto)
+    {   
+        string soluce = await _context.Solutions.Where(s => s.QuestionId == sqldto.QuestionId).Select(s => s.Sql).FirstOrDefaultAsync();
+        //var soluce = await getFirstSoluce(sqldto.QuestionId);
 
-        using MySqlConnection connection = new MySqlConnection(connectionString);
-        DataTable table = new DataTable();
-
-        try
+        if (soluce == null)
         {
-            connection.Open();
-            MySqlCommand command = new MySqlCommand($"SET sql_mode = 'STRICT_ALL_TABLES'; {query}", connection);
-            MySqlDataAdapter adapter = new MySqlDataAdapter(command);
-            adapter.Fill(table);
+            // Handle the case where no solution is found
+            return NotFound();
         }
-        catch (Exception e)
-        {
-            // Handle the exception
-            Console.WriteLine($"Error: {e.Message}");
-        }
+        SqlDTO soluceQuery = new SqlDTO{
+            QuestionId = sqldto.QuestionId,
+            Query = soluce!,
+            DbName = sqldto.DbName
+        };
+        
+        SqlSolutionDTO userQuery = sqldto.ExecuteQuery();
+        
+        if(userQuery.Error.Length > 0)
+            return userQuery;
+        
 
-        // Get column names
-        string[] columns = new string[table.Columns.Count];
-        for (int i = 0; i < table.Columns.Count; ++i)
-            columns[i] = table.Columns[i].ColumnName;
+        SqlSolutionDTO solutionQuery = soluceQuery.ExecuteQuery();
 
-        Console.WriteLine("Columns: ");
-        Console.WriteLine(string.Join(", ", columns));
+        //userQuery.CheckQueries(solutionQuery);
+        //   SqlDTO correctQuery = new SqlDTO(){
 
-        // Get data
-        string[][] data = new string[table.Rows.Count][];
-        for (int j = 0; j < table.Rows.Count; ++j)
-        {
-            data[j] = new string[table.Columns.Count];
-            for (int i = 0; i < table.Columns.Count; ++i)
-            {
-                object value = table.Rows[j][i];
-                string str;
-                if (value == null)
-                    str = "NULL";
-                else
-                {
-                    if (value is DateTime d)
-                    {
-                        if (d.TimeOfDay == TimeSpan.Zero)
-                            str = d.ToString("yyyy-MM-dd");
-                        else
-                            str = d.ToString("yyyy-MM-dd hh:mm:ss");
-                    }
-                    else
-                        str = value?.ToString() ?? "";
-                }
-                data[j][i] = str;
-            }
-        }
-        Console.WriteLine("Data: ");
-        for (int j = 0; j < table.Rows.Count; ++j)
-        {
-            Console.WriteLine(string.Join(", <-ici data ", data[j]));
-        }
-        return Ok(new { Columns = columns, Data = data });
+        //   }
+        if (userQuery.Data is not null && solutionQuery.Data is not null)
+            userQuery.CheckQueries(solutionQuery);
+        else
+            userQuery.Error = new string[] { "Errors while sending the data" };
+
+        return userQuery;
+
     }
 
 
