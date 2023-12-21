@@ -114,15 +114,17 @@ public class QuizController : ControllerBase
                     quiz.HaveAttempt = true;
                     if(attempt.Finish != null ){
                         quiz.Statut = Statut.FINI;
-                        if(quiz.IsTest){
-                            
+                        if(quiz.IsTest ){
+                            quiz.Note = 0;
                             var totalQuestions = await _context.Questions
                                                         .Where(q => q.QuizId == quiz.Id)
                                                         .CountAsync();
                             var correctAnswersCount = await _context.Answers
                                                         .Where(a => a.AttemptId == attempt.Id && a.IsCorrect)
+                                                        .Select(a => a.IsCorrect)
+                                                        .Distinct()
                                                         .CountAsync();
-                            
+                            Console.WriteLine(correctAnswersCount + " CORRECT ANSWER ..........");
                             quiz.Note = ((correctAnswersCount * 10)/ totalQuestions) ;
                         }
                     }
