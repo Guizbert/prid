@@ -10,4 +10,4 @@ public class AttemptDTO
     public int UserId{get;set;}
     public virtual ICollection<AnswerDTO> Answers {get;set;} = new List<AnswerDTO>();
 
-}
+} 

@@ -6,6 +6,7 @@ public class AnswerDTO{
     public DateTimeOffset? TimeStamp {get; set;}
     public bool IsCorrect {get; set;}
     public int AttemptId{get;set;}
+    public int QuestionId{get;set;}
 
     //public virtual ICollection<AttemptDTO> Attempts {get;set;}= new HashSet<AttemptDTO>();
 

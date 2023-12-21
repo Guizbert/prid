@@ -59,7 +59,6 @@ public class QuizController : ControllerBase
     [Authorized(Role.Teacher, Role.Student, Role.Admin)]
     [HttpGet("test/{userId}")]
     public async Task<ActionResult<IEnumerable<QuizDTO>>> GetTest(int userId){
-
         var test =  await _context.Quizzes
             .Where(q => q.IsTest == true)
             .Include(q => q.Database)
@@ -98,11 +97,6 @@ public class QuizController : ControllerBase
     {
         DateTimeOffset today = DateTimeOffset.Now;
 
-        if (userId == null)
-        {
-            return;
-        }
-
         foreach (var quiz in quizzes)
         {
             if(quiz.Finish < today){
@@ -111,13 +105,13 @@ public class QuizController : ControllerBase
             }
             else{
                 var attempt = await _context.Attempts
-                    .FirstOrDefaultAsync(a => a.QuizId == quiz.Id && a.UserId == userId);
+                    .OrderByDescending(a => a.Finish)
+                    .FirstOrDefaultAsync(a => a.QuizId == quiz.Id && a.UserId == userId);       // devrait le récup par la dernière date du finish et pas le premier
 
 
                 if (attempt != null)
                 {
                     quiz.HaveAttempt = true;
-                    Console.WriteLine("quiz : " + quiz.Id + "have attempt :  "+quiz.HaveAttempt);
                     if(attempt.Finish != null ){
                         quiz.Statut = Statut.FINI;
                         if(quiz.IsTest){
@@ -134,7 +128,7 @@ public class QuizController : ControllerBase
                     }
                     else
                         quiz.Statut = Statut.EN_COURS;
-                    quiz.HaveAttempt = true;
+                 
 
                     // Update quiz status based on attempt
                     //quiz.Status = attempt.Status;
@@ -184,12 +178,14 @@ public class QuizController : ControllerBase
 
     [AllowAnonymous]
     [Authorized(Role.Teacher, Role.Student, Role.Admin)]
-    [HttpGet("getAttempt/{quizId}/{userId}")]
-    public async Task<ActionResult<AttemptDTO>> GetAttempt(int quizId, int userId)
+    [HttpGet("getAttempt/{quizId}/{userId}/{questionId}")]
+    public async Task<ActionResult<AttemptDTO>> GetAttempt(int quizId, int userId, int questionId)
     {
         var attempt = await _context.Quizzes
             .Where(q => q.Id == quizId)
             .SelectMany(q => q.Attempts)
+            .OrderByDescending(a => a.Start)
+            .Include(a => a.Answers.Where(answer => answer.QuestionId == questionId).OrderByDescending(a => a.TimeStamp)) 
             .FirstOrDefaultAsync(a => a.UserId == userId);
 
         if (attempt == null)
@@ -198,7 +194,7 @@ public class QuizController : ControllerBase
         }
 
 
-        return Ok(attempt);
+        return Ok(attempt); 
     }
 
 
@@ -222,7 +218,6 @@ public class QuizController : ControllerBase
                 Finish = newAttempt.Finish,
                 UserId = newAttempt.UserId,
                 QuizId = newAttempt.QuizId,
-                // You might want to include Answers here as well if needed
             };
         return Ok(attemptDTO);
     } 

@@ -18,6 +18,8 @@ public class SqlDTO{
     public int QuestionId{get;set;}
     public string Query{get;set;} = null!;
     public string DbName{get; set;}=null!;
+    public bool NewAnswer {get;set;}
+    public int AttemptId{get;set;}
 
 
     public SqlSolutionDTO ExecuteQuery()
@@ -79,14 +81,9 @@ public class SqlDTO{
                 data[j][i] = str;
             }
         }
-
         return new SqlSolutionDTO(){
             Data = data, ColumnNames = columns, DbName = this.DbName
         };
     }
-
-    // public bool Compare(SqlDTO d2){
-
-    // }
     
 }

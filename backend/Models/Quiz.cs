@@ -30,7 +30,6 @@ public class Quiz{
     public int DatabaseId {get;set;}
     
 
-    
     public Statut Statut {get;set;}
 
     [NotMapped]
@@ -46,7 +45,6 @@ public class Quiz{
 
     [JsonIgnore]
     public ICollection<Attempt> Attempts {get;set;} = new HashSet<Attempt>();
-   
 
    public string getStatutasString(){
         switch(Statut)

@@ -7,7 +7,7 @@ public class SqlSolutionDTO{
     public string[][] Data{get;set;} = new string[0][];
     public string DbName{get; set;}="";
     public string[] solutions{get;set;} =new string[0];
-    
+    public bool isCorrect{get;set;}
 
 
     public SqlSolutionDTO CheckQueries(SqlSolutionDTO solutionQuery){
@@ -29,6 +29,7 @@ public class SqlSolutionDTO{
             }
         }
         if (this.Error.Length ==0){
+            isCorrect = true;
             this.CorrectMessage = "Votre requête a retourné une réponse correcte ! \nNéanmoins, comparez votre solution avec celle(s) ci-dessous pour voir si vous n'avez pas eu un peu de chance :)";
         }
         

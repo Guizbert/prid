@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 
 
 namespace prid_2324_a12.Models;
@@ -12,7 +13,7 @@ public class Answer {
     public DateTimeOffset? TimeStamp {get; set;}
     public bool IsCorrect {get; set;}
     
-    [ForeignKey(nameof(AttemptId))]
+    [ForeignKey(nameof(AttemptId))]    [JsonIgnore]
     public Attempt Attempt{get;set;}= null!;
     public int AttemptId{get;set;}
 

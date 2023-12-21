@@ -37,12 +37,59 @@ public class QuestionController : ControllerBase
     }
 
     [AllowAnonymous]
-    [HttpGet("getByQuiz/{quizId}")]
-    public async Task<Question?> GetByQuiz(int quizId){
+    [HttpGet("getFirstQuestion/{quizId}/{userId}")]
+    public async Task<Question?> GetFirstQuestion(int quizId, int userId){
+        var attempt = await _context.Attempts.Where(a => a.QuizId == quizId && a.UserId == userId).OrderByDescending(a => a.Finish).FirstOrDefaultAsync();
+        if(attempt != null ){
+            if(attempt.Finish != null){
+                var newAttempt = new Attempt
+                {
+                    Start = DateTimeOffset.Now,
+                    UserId = userId,
+                    QuizId = quizId,
+                };
+                _context.Attempts.Add(newAttempt);
+                await _context.SaveChangesAsync();
+
+                var attemptDTO = new AttemptDTO
+                {
+                    Id = newAttempt.Id,
+                    Start = newAttempt.Start,
+                    //Finish = newAttempt.Finish,
+                    UserId = newAttempt.UserId,
+                    QuizId = newAttempt.QuizId,
+                };
+            }
+        }else{
+            var newAttempt = new Attempt
+                {
+                    Start = DateTimeOffset.Now,
+                    UserId = userId,
+                    QuizId = quizId,
+                };
+                _context.Attempts.Add(newAttempt);
+                await _context.SaveChangesAsync();
+
+                var attemptDTO = new AttemptDTO
+                {
+                    Id = newAttempt.Id,
+                    Start = newAttempt.Start,
+                    //Finish = newAttempt.Finish,
+                    UserId = newAttempt.UserId,
+                    QuizId = newAttempt.QuizId,
+                };
+        }
         var question = await _context.Questions.Where(q => q.QuizId == quizId).ToListAsync();
         return question[0];
     }
 
+    [AllowAnonymous]
+    [HttpGet("getFirstQuestionReadOnly/{quizId}/{userId}")]
+    public async Task<Question?> getFirstQuestionReadOnly(int quizId, int userId){
+        var question = await _context.Questions.Where(q => q.QuizId == quizId).ToListAsync();
+        return question[0];
+    }
+    
     [AllowAnonymous]
     [HttpGet("getOther/{questionId}")]
     public async Task<ActionResult<IEnumerable<QuestionDTO>>> GetByQuestion(int questionid){
@@ -78,17 +125,6 @@ public class QuestionController : ControllerBase
         return questionDTO;
     }
 
-    // [AllowAnonymous]
-    // [HttpGet("getQuiz/{id}")]
-    // public async Task<ActionResult<QuizDTO>> GetQuizByQuestion(int id){
-    //     var question = await _context.Questions.SingleOrDefaultAsync(q => q.QuizId == id);
-
-    //     if (question == null)
-    //         return NotFound();
-
-    //     var quizDTO = _mapper.Map<QuizDTO>(question.Quiz);
-    //     return quizDTO;
-    // }
 
 
     [AllowAnonymous]
@@ -145,7 +181,6 @@ public class QuestionController : ControllerBase
         {
             Console.WriteLine($"Error: {e.Message}");
         }
-
         return Ok(tableNames); 
     }
 
@@ -183,7 +218,8 @@ public class QuestionController : ControllerBase
     [Authorized(Role.Teacher, Role.Student, Role.Admin)]
     [HttpPost("querySent")]
     public async Task<ActionResult<object>> Sql(SqlDTO sqldto)
-    {   
+    {
+
         string soluce = await _context.Solutions.Where(s => s.QuestionId == sqldto.QuestionId).Select(s => s.Sql).FirstOrDefaultAsync();
         //var soluce = await getFirstSoluce(sqldto.QuestionId);
 
@@ -205,20 +241,50 @@ public class QuestionController : ControllerBase
         
 
         SqlSolutionDTO solutionQuery = soluceQuery.ExecuteQuery();
-
-        //userQuery.CheckQueries(solutionQuery);
-        //   SqlDTO correctQuery = new SqlDTO(){
-
-        //   }
         if (userQuery.Data is not null && solutionQuery.Data is not null)
             userQuery.CheckQueries(solutionQuery);
         else
             userQuery.Error = new string[] { "Errors while sending the data" };
 
+
+        var answer = new Answer 
+        {
+            Sql = sqldto.Query,
+            TimeStamp = DateTimeOffset.Now,
+            IsCorrect = userQuery.isCorrect,
+            AttemptId = sqldto.AttemptId,
+            QuestionId = sqldto.QuestionId                
+        };
+
+        _context.Answers.Add(answer);
+        await _context.SaveChangesAsync();
+
+        var answerDTO = new AnswerDTO
+        {
+            Id = answer.Id,
+            Sql = answer.Sql,
+            TimeStamp = answer.TimeStamp,
+            IsCorrect = answer.IsCorrect,
+            AttemptId = answer.AttemptId,
+            QuestionId = answer.QuestionId,
+        };
+        
         return userQuery;
 
     }
 
+    [AllowAnonymous]
+    [Authorized(Role.Teacher, Role.Student, Role.Admin)]
+    [HttpGet("endAttempt/{attemptId}")]
+    public async Task<ActionResult<object>> EndAttempt(int attemptId)
+    {
+        var attempt = await _context.Attempts.Where(a => a.Id == attemptId).FirstOrDefaultAsync();
+        attempt.Finish = DateTimeOffset.Now;
+
+        await _context.SaveChangesAsync();
+
+        return _mapper.Map<AttemptDTO>(attempt);
+    }
 
 
 //faire le put pour la modif
