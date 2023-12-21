@@ -8,7 +8,7 @@ import { Database } from "./database";
 export class Answer{
     id?: number;
     //quiz?: Quiz;
-    Sql?: string;
+    sql?: string;
     timeStamp?: Date;
     isCorrect?:boolean;
     quizId?: number;
@@ -17,7 +17,7 @@ export class Answer{
     questionId?:number;
 
     get display(): string {
-        return `${this.Sql} ${this.timeStamp}`;
+        return `${this.sql} ${this.timeStamp}`;
     }
 
     // get evaluation(): number{

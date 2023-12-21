@@ -88,7 +88,7 @@ export class QuizTrainingComponent implements OnInit,  AfterViewInit{
         this.dataSource.sort = this.sort;
         this.dataSource.filterPredicate = (data: Quiz, filter: string) => {
             // Utilisez les mêmes propriétés que pour isTest true
-            var str = data.name + ' ' + data.description + ' ' + data.statut + ' ' + data.database?.name;
+            var str = data.name + ' ' + data.description + ' ' + data.getstatut + ' ' + data.database?.name;
             
             return str.toLowerCase().includes(filter.toLowerCase());
         }
@@ -98,28 +98,30 @@ export class QuizTrainingComponent implements OnInit,  AfterViewInit{
     }
     
 
-    attempt(quizid: number) {        
-        this.questionService.getForQuiz(quizid).subscribe(response => { // <- ici renvoyer quizId et user id pour check si attempt, si non -> new attempt
+    attempt(quizid: number) {
+        this.questionService.getFirstQuestion(quizid,this.user!.id).subscribe(response => { // <- ici renvoyer quizId et user id pour check si attempt, si non -> new attempt
             //console.log(response);
             this.router.navigate(['/question/'+response.id]);
         });
     }
     newAttempt(quizId:number){
         console.log(quizId); console.log(" user ->  "+ this.user!.id);
-        this.quizService.newAttempt(quizId, this.user!.id).subscribe(
-            res => {
-                this.quizService.attemptId = res.id!;
-                console.log("RESSSSSSSSSSSSSSSSSSSSSS");
-                console.log(res);
-            }
-        );
+        //this.quizService.newAttempt(quizId, this.user!.id);
         this.attempt(quizId);
     }
     
     
     edit(quiz: Quiz) {
+        
         console.log(quiz);
     }   
+    checkLastAttempt(quizid:number){
+        this.questionService.getFirstQuestionReadOnly(quizid,this.user!.id).subscribe(response => { // <- ici renvoyer quizId et user id pour check si attempt, si non -> new attempt
+            //console.log(response);
+            this.router.navigate(['/question/'+response.id]);
+        });
+        //this.router.navigate(['/question/'+response.id]);
+    }
 
     refresh(){
         if(this._isTest){

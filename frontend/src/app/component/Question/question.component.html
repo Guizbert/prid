@@ -10,27 +10,28 @@
 <p class="exo"> {{ question?.body}} </p>
 <!-- mettre un parametre avec le database name et return les col et data dans le cod-editor component -->
 
-<code-editor #editor [(ngModel)]="query" [database]="database"></code-editor> 
+<code-editor #editor [(ngModel)]="query" [database]="database" ></code-editor> 
 
-<div class="action">
-    <button (click)="envoyer()"   >Envoyer    </button>
+<div class="action" *ngIf="!isreadonly">
+    <button (click)="envoyer(true)"   >Envoyer    </button>
     <button (click)="delete()"    >Effacer    </button>
     <button *ngIf="!isTest" (click)="voirSoluce()">Voir soluce</button>
 </div>
 
-<p class="correct" *ngIf="correctQuery">
-    Votre requête a retourné une réponse correcte ! 
-    <br>
-    Néanmoins, comparez votre solution avec celle(s) ci-dessous pour voir si vous n'avez pas eu un peu de chance :)
-</p>
-<div class="errors" *ngIf="badQuery">
-    <p><b>ERROR :</b></p>
-    <div  *ngFor="let error of errors">
-        <p>{{ error }}</p>
-    </div>
-</div>
-
 <div *ngIf="!isTest">
+
+    <p class="correct" *ngIf="correctQuery">
+        Votre requête a retourné une réponse correcte ! 
+        <br>
+        Néanmoins, comparez votre solution avec celle(s) ci-dessous pour voir si vous n'avez pas eu un peu de chance :)
+    </p>
+    <div class="errors" *ngIf="badQuery">
+        <p><b>ERROR :</b></p>
+        <div  *ngFor="let error of errors">
+            <p>{{ error }}</p>
+        </div>
+    </div>
+
     <table>
         <thead>
             <tr>

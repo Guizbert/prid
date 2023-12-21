@@ -62,10 +62,19 @@ export class CodeEditorComponent implements AfterViewInit, ControlValueAccessor 
     private _aceEditor?: ace.Ace.Editor;
     // détermine si l'éditeur est en lecture seule
     private _readOnly: boolean = false;
+
+    // get readonly():boolean{
+    //     return CodeEditorComponent.readOnly;
+    // }
+    // @Input() set readonly(value: boolean):boolean{
+    //     CodeEditorComponent.readOnly = value;
+
+    // }
     // contient la fonction de callback qui sera appelée quand la valeur de l'éditeur change
     private _onChange: any;
     completion: any[] = [];
     //nom de la db a utiliser:
+
     private static _database: Database;
 
     get database(): Database  {

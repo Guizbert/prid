@@ -7,6 +7,7 @@ import { Question } from '../models/question';
 import { catchError, map } from 'rxjs/operators';
 import { Observable, of } from 'rxjs';
 import { plainToInstance } from 'class-transformer'; 
+import { Attempt } from '../models/Attempt';
 
 @Injectable({ providedIn: 'root' })
 export class QuestionService{
@@ -21,8 +22,14 @@ export class QuestionService{
         );
     }
 
-    getForQuiz(id: number) {
-        return this.http.get<Question>(`${this.baseUrl}api/question/getByQuiz/${id}`).pipe(
+    getFirstQuestion(id: number, userId:number) {
+        return this.http.get<Question>(`${this.baseUrl}api/question/getFirstQuestion/${id}/${userId}`).pipe(
+            map(res => plainToInstance(Question, res)),
+            //catchError(err => of(null))
+        );
+    }
+    getFirstQuestionReadOnly(id: number, userId:number) {
+        return this.http.get<Question>(`${this.baseUrl}api/question/getFirstQuestionReadOnly/${id}/${userId}`).pipe(
             map(res => plainToInstance(Question, res)),
             //catchError(err => of(null))
         );
@@ -46,9 +53,14 @@ export class QuestionService{
         return this.http.get<number[]>(`${this.baseUrl}api/question/getQuestionss/${id}`);
     }
     
-    querySent(questionId:number,query: string, dbname: string): Observable<any> {
+    querySent(questionId:number,query: string, dbname: string, newAnswer:boolean,attemptId:number): Observable<any> {
         //console.log(options);
-        return this.http.post<any>(`${this.baseUrl}api/question/querySent`, {questionId,query, dbName:dbname});
+        return this.http.post<any>(`${this.baseUrl}api/question/querySent`, {questionId,query, dbName:dbname, newAnswer,attemptId});
+    }
+
+    endAttempt(attemptId: number): Observable<any> {
+        //console.log(options);
+        return this.http.get<any>(`${this.baseUrl}api/question/endAttempt/${attemptId}`);
     }
 
     getColumns(dbname:string):Observable<any[]>{

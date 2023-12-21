@@ -50,9 +50,11 @@
                     <a (click)="edit(row.id)" *ngIf="isAdmin"><mat-icon>edit</mat-icon></a>
                 </div>
                 <div class="" *ngIf="!isAdmin && !row.isClosed">
-                    <a (click)="attempt(row.id)" *ngIf="row.haveAttempt"><mat-icon>edit</mat-icon></a>
+                    <a (click)="attempt(row.id)" *ngIf="row.getstatut =='EN_COURS'"><mat-icon>edit</mat-icon></a>
                     <a (click)="newAttempt(row.id)" *ngIf="!row.haveAttempt"><mat-icon>add_circle</mat-icon></a>
-                    <a (click)="edit(row)" *ngIf="row.haveAttempt"><mat-icon>book</mat-icon></a>
+                    <a (click)="checkLastAttempt(row.id)" *ngIf="row.haveAttempt "><mat-icon>book</mat-icon></a>
+                    <a (click)="newAttempt(row.id)" *ngIf="row.getstatut =='FINI' && !row.isTest "><mat-icon>add_circle</mat-icon></a>
+
                 </div>
             </td>
            

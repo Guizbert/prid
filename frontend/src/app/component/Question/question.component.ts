@@ -14,6 +14,10 @@ import { Database } from 'src/app/models/database';
 import { Injectable } from "@angular/core";
 import { Subject, BehaviorSubject } from "rxjs";
 import { Attempt } from 'src/app/models/Attempt';
+import { Answer } from 'src/app/models/Answer';
+import { MatDialog } from '@angular/material/dialog';
+import { ExitDialogComponent } from './ExitDialogComponent';
+
 
 
 @Component({
@@ -21,14 +25,13 @@ import { Attempt } from 'src/app/models/Attempt';
   styleUrls: ['question.component.css']
 
 })
-export class QuestionComponent implements OnInit, OnDestroy  {
+export class QuestionComponent implements OnInit, AfterViewInit  {
   question!: Question;
+  answer?: Answer;
   quizid!: number;
   otherQuestions: number[] = [];
   solutions: string[] = [];
-  sql?:string = "";
   quiz!: Quiz;
-  subscription: Subscription;
   showSoluce: boolean = false;
   database!: Database;
   isTest: boolean = false;
@@ -37,16 +40,14 @@ export class QuestionComponent implements OnInit, OnDestroy  {
   columnTable: string[] = []; //colonne
   dataT: string[] =[];        //les deux réunis
 
-  resultQuery: string[]=[]; // pour vérfier si tout est bon a partir de la première solution
-  resultColumn:string[]=[];
-  resultData:string[]=[];
-
   badQuery: boolean =false;
   correctQuery: boolean =false;
   errors: string[] = [];
   correctMessage: string = "";
   user?: User ;
   attempt?: Attempt;
+
+  isreadonly:boolean = false;
 
   @ViewChild("editor") editor!: CodeEditorComponent;
 
@@ -58,43 +59,19 @@ export class QuestionComponent implements OnInit, OnDestroy  {
     private router: Router,
     public authenticationService: AuthenticationService,
     private activatedRoute: ActivatedRoute, // Add ActivatedRoute for getting parameters from URL
+    private dialog : MatDialog
   ) {
     this.user = this.authenticationService.currentUser;
-    this.subscription = questionService.sql$.subscribe(sql1 => {
-      this.sql = sql1;
-    })
-    this.resultQuery = []; this.dataT = [];
+    this.dataT = [];
 
   }
 
 
   ngOnInit(): void {
-    //console.log(this.quizService.attemptId); // pour check si y a un attempt mais fonctionne pas.
-    const questionId = this.activatedRoute.snapshot.params['id'];
-    this.questionService.getById(questionId).subscribe(res => {
-      this.question = res;
-      console.log(this.question);
-      this.quizid = this.question.quizId!; 
-      this.quizService.getAttempt(this.quizid, this.user!.id).subscribe(res => {
-          if(res) this.attempt = res;
-          
-      });
-      this.database! = this.question.database!;
-      this.quizService.isTestByid(this.question.quizId!).subscribe(res =>{
-        console.log(res);
-        this.isTest = res;
-      })   
-      for(let i = 0; i < this.question.solutions!.length; ++i){
-        this.solutions.push(this.question.solutions![i].sql!);
-      }
-      this.loadOtherQuestion(this.question.quizId!);
-    });
-    
-    // this.questionService.getColumns(this.database.name!).subscribe(res =>{
-    //   this.editor.getColumsName(res);
-    // })
-    //this.editor.
+  }
 
+  ngAfterViewInit(): void {
+    this.refresh(this.activatedRoute.snapshot.params['id']);
   }
 
   prevQuestion() {
@@ -129,22 +106,43 @@ export class QuestionComponent implements OnInit, OnDestroy  {
   } 
 
   exit(){
-    console.log("exit             <-");
-    this.router.navigate(['/quiz']);
+    console.log("exit <-");
+    if(this.isreadonly){
+      this.router.navigate(['/quiz']);
+    }
+    else{
+      const dialogRef = this.dialog.open(ExitDialogComponent, {
+      width: '250px',
+      data: { message: 'If you exit, the attempt will be finished.' }
+    });
+  
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.questionService.endAttempt(this.attempt!.id!).subscribe(res => {
+          console.log(res);
+        })
+        // User clicked on "Yes", navigate away
+        this.router.navigate(['/quiz']);
+      }
+      // User clicked on "No" or closed the dialog
+    });
+    }
+    
   }
+
   delete(){
     this.query = "";
   }
 
  
- envoyer() {
+ envoyer(newAnswer: boolean) {
     // Implement the refresh logic as needed
     console.log("send             <-");
     //doit faire la création si elle n'existe pas; et la modification si elle existe déjà 
 
     const cleanedQuery = this.query.replace(/[\r\n]/g, ' '); // enlève le \n pour éviter les erreurs 
     if(cleanedQuery){
-      this.questionService.querySent(this.question.id!, cleanedQuery, this.database.name!).subscribe(
+      this.questionService.querySent(this.question.id!, cleanedQuery, this.database.name!, newAnswer, this.attempt?.id!).subscribe(
         (data: any) => {
           this.errors = data.error; 
           if(this.errors.length >0)
@@ -157,6 +155,9 @@ export class QuestionComponent implements OnInit, OnDestroy  {
           this.dataTable =  data.data;      //que le contenu
           this.columnTable = data.columnNames;  // que les colonnes
 
+          if(newAnswer){
+            console.log("new");
+          }
           /** ============================================ */
           //faire la création de l'attempt et answer
         }
@@ -182,16 +183,41 @@ export class QuestionComponent implements OnInit, OnDestroy  {
 
 
   refresh(id:number){
+    this.query = "";
+    this.dataT = [];
+    this.dataTable = [];
+    this.columnTable = [];
     if(this.solutions.length>0) this.solutions = [];
     this.questionService.getById(id).subscribe(res => {
       this.question = res;
-      this.delete();
-      this.columnTable = [];
-      this.dataTable= [];
-      this.errors = [];
+      this.quizid = this.question.quizId!; 
+      this.quizService.getAttempt(this.quizid, this.user!.id, id).subscribe(res => {
+          if(res){
+            this.attempt = res;
+            console.log(res);
+            if(res.finish){
+              this.editor.readOnly = true;
+              this.isreadonly = true;
+              console.log(this.editor.readOnly + " IS READ ONLY ");
+            }
+            this.answer = res.answers[0];
+            if(this.answer){
+              this.query = this.answer?.sql!;
+              this.envoyer(false);
+            }
+          }
+      });
+      this.database! = this.question.database!;
+      this.quizService.isTestByid(this.question.quizId!).subscribe(res =>{
+        console.log(res);
+        this.isTest = res;
+      })
+      for(let i = 0; i < this.question.solutions!.length; ++i){
+        this.solutions.push(this.question.solutions![i].sql!);
+      }
+      this.loadOtherQuestion(this.question.quizId!);
       this.badQuery = false;
       this.correctQuery = false;
-      console.log(this.question);
       this.showSoluce = false;
     });
   }
@@ -211,7 +237,5 @@ export class QuestionComponent implements OnInit, OnDestroy  {
     throw new Error('Method not implemented.');
   }
 
-  ngOnDestroy(): void {
-    this.subscription.unsubscribe();
-  }
+
 }

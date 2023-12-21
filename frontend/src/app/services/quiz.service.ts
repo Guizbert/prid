@@ -56,8 +56,8 @@ export class QuizService{
     haveAttempt(quizId: number, userId:number){
         return this.http.get<any>(`${this.baseUrl}api/quiz/haveAttempt/${quizId}/${userId}`);
     }
-    getAttempt(quizId: number, userId:number){
-        return this.http.get<any>(`${this.baseUrl}api/quiz/getAttempt/${quizId}/${userId}`);
+    getAttempt(quizId: number, userId:number, questionId:number){
+        return this.http.get<any>(`${this.baseUrl}api/quiz/getAttempt/${quizId}/${userId}/${questionId}`); //return attempt et answer de la question
     }
     getNote(quizId: number, userId:number){
         return this.http.get<any>(`${this.baseUrl}api/quiz/getNote/${quizId}/${userId}`);

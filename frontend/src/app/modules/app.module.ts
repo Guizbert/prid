@@ -23,6 +23,7 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { SharedModule } from './shared.module';
 import { MAT_DATE_FORMATS, MAT_DATE_LOCALE } from '@angular/material/core';
 import { fr } from 'date-fns/locale';
+import { ExitDialogComponent } from '../component/question/ExitDialogComponent';
 
 @NgModule({
     declarations: [
@@ -39,7 +40,8 @@ import { fr } from 'date-fns/locale';
         QuestionComponent,
         UnknownComponent,
         CodeEditorComponent,
-        RestrictedComponent
+        RestrictedComponent,
+        ExitDialogComponent
     ],
     imports: [
         BrowserModule.withServerTransition({ appId: 'ng-cli-universal' }),
