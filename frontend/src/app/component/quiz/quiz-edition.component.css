@@ -1,0 +1,42 @@
+.radioGroup {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px; /* Add some margin to separate from other elements if needed */
+}
+
+.radioGroup mat-radio-group {
+  margin-left: 10px; /* Adjust the margin as needed to separate label and radio buttons */
+}
+
+textarea{
+  width: 100%;
+}
+.titleQuestion{
+  width: 100%;
+  
+}
+input[type='radio'] {
+  accent-color: #848484;
+}
+span{
+  color: black;
+}
+
+.mat-mdc-radio-button.mat-primary {
+  --mdc-radio-unselected-hover-icon-color: #0da4e5;
+  --mdc-radio-unselected-icon-color: rgba(240, 9, 9, 0.54);
+}
+.mat-mdc-outlined-button.mat-unthemed {
+  --mdc-outlined-button-label-text-color: #ffffff;
+  background-color: rgb(100, 100, 100);
+}
+
+
+.mat-mdc-outlined-button:not(:disabled) {
+  color: white;
+}
+.btn-primary {
+  color:white;
+  --bs-btn-hover-bg: #b3b3b3;
+  background-color: gray;
+}

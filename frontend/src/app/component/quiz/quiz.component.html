@@ -7,14 +7,20 @@
         </mat-form-field>
         <div *ngIf="isTeacher" class="" >
             <p> teacher </p>
+
+            <quizTeacher [filter]="filter"></quizTeacher>
         </div>
 
-        
-        <quizTraining [filter]="filter" [isTest]="false"></quizTraining>
 
-        <quizTraining [filter]="filter" [isTest]="true"></quizTraining>
+
+        <div *ngIf="!isTeacher" class="" >
+            <quizTraining [filter]="filter" [isTest]="false"></quizTraining>
+            <quizTraining [filter]="filter" [isTest]="true"></quizTraining>
+        </div>
+        
+
     </div>
 
 </div>
 
-<button *ngIf="isTeacher" class="btn btn-info">new Test</button>
+<button *ngIf="isTeacher" (click)="newQuiz()" class="btn btn-info"><mat-icon>add_circle</mat-icon></button>

@@ -1,8 +1,5 @@
-<div *ngIf="!isTest">
-    <h2>Quiz de training</h2>
-</div>
-<div *ngIf="isTest">
-    <h2>Quiz de test</h2>
+<div>
+    <h2>Quiz</h2>
 </div>
 <div class="row">
     <table mat-table [dataSource]="dataSource" class="mat-elevation-z8" matSort matSortDisableClear>
@@ -19,17 +16,17 @@
         <!-- Start Column -->
         <ng-container matColumnDef="start" >
             <th mat-header-cell *matHeaderCellDef mat-sort-header>Start</th>
-            <td mat-cell *matCellDef="let quiz">{{ quiz.start | date:'dd/MM/yyyy'}}</td>
+            <td mat-cell *matCellDef="let quiz">{{ quiz.start ? (quiz.start | date:'dd/MM/yyyy') :('N/A')}}</td>
         </ng-container>
         <!-- Finish Column -->
         <ng-container matColumnDef="finish">
             <th mat-header-cell *matHeaderCellDef mat-sort-header>Finish</th>
-            <td mat-cell *matCellDef="let quiz">{{ quiz.finish | date:'dd/MM/yyyy' }}</td>
+            <td mat-cell *matCellDef="let quiz">{{ quiz.finish ? (quiz.finish | date:'dd/MM/yyyy') : ('N/A') }}</td>
         </ng-container>
         <!-- statut Column -->
         <ng-container matColumnDef="statut"  >
             <th mat-header-cell *matHeaderCellDef mat-sort-header>statut</th>
-            <td mat-cell *matCellDef="let quiz">{{ quiz.getstatut }}</td>
+            <td mat-cell *matCellDef="let quiz">{{ quiz.getstatut}}</td>
         </ng-container>
 
         <ng-container matColumnDef="evaluation" >
@@ -46,13 +43,7 @@
         <ng-container matColumnDef="actions">
             <th mat-header-cell *matHeaderCellDef> Actions </th>
             <td mat-cell *matCellDef="let row">
-                <div class="" *ngIf="!row.isClosed">
-                    <a (click)="attempt(row.id)" *ngIf="row.getstatut =='EN_COURS'"><mat-icon>edit</mat-icon></a>
-                    <a (click)="newAttempt(row.id)" *ngIf="!row.haveAttempt"><mat-icon>add_circle</mat-icon></a>
-                    <a (click)="checkLastAttempt(row.id)" *ngIf="row.haveAttempt && row.getstatut =='FINI' "><mat-icon>book</mat-icon></a>
-                    <a (click)="newAttempt(row.id)" *ngIf="row.getstatut =='FINI' && !row.isTest "><mat-icon>add_circle</mat-icon></a>
-
-                </div>
+                <a (click)="edit(row.id)"><mat-icon>edit</mat-icon></a>
             </td>
            
         </ng-container>

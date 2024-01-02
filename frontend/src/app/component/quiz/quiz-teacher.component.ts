@@ -19,10 +19,10 @@ import { Question } from 'src/app/models/question';
 
 
 @Component({
-    selector: 'quizTraining',
-    templateUrl: 'quiz-training.component.html',
+    selector: 'quizTeacher',
+    templateUrl: 'quiz-teacher.component.html',
 })
-export class QuizTrainingComponent implements OnInit,  AfterViewInit{
+export class QuizTeacherComponent implements OnInit,  AfterViewInit{
     displayedColumns: string[] = ['name', 'database', 'start', 'finish', 'statut', 'isTest', 'actions'];
     dataSource: MatTableDataSource<Quiz> = new MatTableDataSource();
     private user!: User | undefined ;
@@ -47,14 +47,6 @@ export class QuizTrainingComponent implements OnInit,  AfterViewInit{
         this.load('setter');
     }
 
-    private _isTest?: boolean;
-    get isTest(): boolean | undefined {
-        return this._isTest;
-    }
-    @Input() set isTest(value: boolean | undefined) {
-        this._isTest = value;
-        this.load('setter');
-    }    
     state: MatTableState;
 
     @ViewChild(MatPaginator) paginator!: MatPaginator;
@@ -77,8 +69,6 @@ export class QuizTrainingComponent implements OnInit,  AfterViewInit{
         // pour check si y a un attempt etc
         this.user = this.authenticationService.currentUser;
         this.isAdmin = this.user?.role == Role.Teacher
-        this.displayedColumns = !this.isTest ? ['name', 'database', 'statut',   'isTest', 'actions']
-                :['name', 'database', 'start', 'finish', 'statut', 'evaluation', 'isTest', 'actions'];
     }
 
 
@@ -95,51 +85,20 @@ export class QuizTrainingComponent implements OnInit,  AfterViewInit{
         
         this.state.bind(this.dataSource);
         this.refresh();
-    }
-    
-
-    attempt(quizid: number) {
-        this.questionService.getFirstQuestion(quizid,this.user!.id).subscribe(response => { // <- ici renvoyer quizId et user id pour check si attempt, si non -> new attempt
-            //console.log(response);
-            this.router.navigate(['/question/'+response.id]);
-        });
-    }
-    newAttempt(quizId:number){
-        console.log(quizId); console.log(" user ->  "+ this.user!.id);
-        //this.quizService.newAttempt(quizId, this.user!.id);
-        this.attempt(quizId);
-    }
-    
+    }  
     
     edit(quizid: number) {
         this.router.navigate(['/quizEdition/'+quizid]);
     }   
-    checkLastAttempt(quizid:number){
-        this.questionService.getFirstQuestionReadOnly(quizid,this.user!.id).subscribe(response => { // <- ici renvoyer quizId et user id pour check si attempt, si non -> new attempt
-            //console.log(response);
-            this.router.navigate(['/question/'+response.id]);
-        });
-        //this.router.navigate(['/question/'+response.id]);
-    }
+
 
     refresh(){
-        if(this._isTest){
-            this.quizService.getTest(this.user!.id).subscribe(quizzes => {
-                quizzes.forEach(res => {
-                    console.log(res);
-                    
-                })
+        if(this.user?.role == Role.Teacher){
+            this.quizService.getAll( this.user.id).subscribe(quizzes => {
+                console.log(quizzes);
                 this.dataSource.data = quizzes;
                 this.filter = this.state.filter;
-            })
-        }else
-        {    this.quizService.getQuizzes(this.user!.id).subscribe(quizzes => {
-                this.dataSource.data = quizzes;
-                quizzes.forEach(res => {
-                    console.log(res);
-                })
-                this.filter = this.state.filter;
-            })
+            }) 
         }
     }
 

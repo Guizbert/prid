@@ -1,0 +1,137 @@
+
+
+
+<form [formGroup]="quizEditionForm" novalidate>
+
+    <div class="row">
+        <div class="col-sm-4">
+            <mat-form-field >
+                <mat-label>Name</mat-label>
+                <input matInput [formControl]="ctlName" required appSetFocus  [readonly]="haveAttempt"> 
+                <mat-error class="field-error" *ngIf="ctlName.hasError('required')">Required</mat-error>
+            <!-- faire boolean pour readonly isNew -->
+            </mat-form-field>
+
+
+            <mat-form-field>
+                <mat-label>Description</mat-label>
+                <textarea matInput [formControl]="ctlDescription" rows="4"  [readonly]="haveAttempt"></textarea>
+                <!-- <mat-error class="field-error" *ngIf="ctlDescription.hasError('required')">Required</mat-error> -->
+            </mat-form-field>
+
+            <div class="radioGroup" >
+                type de quiz:
+                <mat-radio-group [formControl]="ctlTypeQuiz" (change)="updateType($event)" class="radiobtn" [disabled]="haveAttempt">
+                    
+                    <mat-radio-button class="radio-button-custom" color="primary" value="Training">
+                       <span> Training</span>
+                    </mat-radio-button>
+                    
+                    <mat-radio-button class="radio-button-custom" color="primary" value="Test">
+                       <span> Test</span>
+                    </mat-radio-button>
+                    
+                </mat-radio-group>
+            </div>
+
+            <!-- fin class col-sm 4 -->
+        </div> 
+
+        <div class="col-sm-4">
+            <mat-form-field >
+                <mat-label>Base de donnée</mat-label>
+                <mat-select [formControl]="ctlDb" required (selectionChange)="onDatabaseChange($event.value)" [disabled]="haveAttempt"> 
+                    <mat-option *ngFor="let db of databases" [value]="db">
+                        {{db.name}}
+                    </mat-option>
+                </mat-select>
+            </mat-form-field> 
+        
+        </div>
+        <div class="col-sm-4">
+            <mat-slide-toggle [formControl]="ctlIsPublished" [disabled]="haveAttempt"><span>Published</span></mat-slide-toggle>
+        </div>
+        <div class="row mt-2">
+            <div class="col-sm-6">
+                <button mat-stroked-button (click)="saveQuiz()" [disabled]="quizEditionForm.invalid || haveAttempt" class="btn btn-primary" rows="4">Save</button>
+            </div>
+            <div class="col-sm-6" *ngIf="editMode">
+                <button mat-stroked-button [disabled]="!isExistingQuiz" (click)="delete()"  color="warn" class="btn btn-primary" rows="4">Delete</button>
+            </div>
+        </div>
+        <mat-form-field *ngIf="isTest">
+            <ng-container >
+                <div class="col-sm-4">
+                  <mat-form-field appearance="fill" >
+                    <mat-label>Start</mat-label>
+                    <input matInput [matDatepicker]="pickerStart" [formControl]="ctlStartDate" [min]="today" [disabled]="haveAttempt">
+                    <mat-datepicker-toggle matSuffix [for]="pickerStart"></mat-datepicker-toggle>
+                    <mat-datepicker #pickerStart></mat-datepicker>
+                    <mat-error class="field-error" *ngIf="ctlStartDate.hasError('inPast')">Can't be in the past</mat-error>
+                    <mat-error class="field-error" *ngIf="ctlStartDate.hasError('   ')">Can't start after the end</mat-error>
+                  </mat-form-field>
+              
+                  <mat-form-field appearance="fill">
+                    <mat-label>Finish</mat-label>
+                    <input matInput [matDatepicker]="pickerFinish" [formControl]="ctlFinishDate" [min]="today" [disabled]="haveAttempt">
+                    <mat-datepicker-toggle matSuffix [for]="pickerFinish"></mat-datepicker-toggle>
+                    <mat-datepicker #pickerFinish></mat-datepicker>
+                    <mat-error class="field-error" *ngIf="ctlFinishDate.hasError('beforeStart')">Can't end before start</mat-error>
+                    <mat-error class="field-error" *ngIf="ctlFinishDate.hasError('beforeToday')">Can't end before today</mat-error>
+                  </mat-form-field>
+                </div>
+            </ng-container>
+        </mat-form-field>
+    </div>
+
+    <div class="row">
+        <div class="col-sm-12">
+            <mat-accordion [multi]="true">
+                <mat-expansion-panel *ngFor="let question of questions; let questionIdx = index" (opened)="question.openedPanel = true" (closed)="question.openedPanel=false">
+                    <mat-expansion-panel-header>
+                        <mat-panel-title class="titleQuestion">
+                            Q{{ questionIdx + 1 }}  {{!question.openedPanel ? (': '+(question.body ? question.body : '') | truncate:80) : ('')}}
+                        </mat-panel-title>
+                        
+                    </mat-expansion-panel-header>
+                    <div class="expansion-panel-content">
+                        <textarea MatInput class="large-textarea" [(ngModel)]="question.body" [ngModelOptions]="{standalone: true}"  [disabled]="haveAttempt">{{ question.body  }}</textarea>
+
+                        <div *ngFor="let solution of question.solutions; let solutionIdx = index" >
+                            <p> Solution {{ solutionIdx + 1}}</p>
+                            <code-editor  [(ngModel)]="solution.sql" [database]="database!" [ngModelOptions]="{standalone: true}"  [disabled]="haveAttempt"></code-editor>
+                            <div class="solution-controls">
+                                <button  [disabled]="haveAttempt" mat-icon-button (click)="moveSolutionUp(questionIdx, solutionIdx)" aria-label="Move Up" *ngIf="solutionIdx > 0" matTooltip="Change solution order (up)."matTooltipPosition="left">
+                                    <mat-icon>arrow_upward</mat-icon>
+                                </button>
+                                <button  [disabled]="haveAttempt" mat-icon-button (click)="moveSolutionDown(questionIdx, solutionIdx)" aria-label="Move Down" *ngIf="solutionIdx < question.solutions!.length - 1" matTooltip="Change solution order (down)."matTooltipPosition="left">
+                                    <mat-icon>arrow_downward</mat-icon>
+                                </button>
+                                <button  [disabled]="haveAttempt" mat-icon-button (click)="deleteSolution(questionIdx, solutionIdx)" aria-label="Delete" matTooltip="Delete solution."matTooltipPosition="below">
+                                    <mat-icon>delete</mat-icon>
+                                </button>
+                            </div>
+                        </div>
+                        <mat-panel-description>
+                            <button  [disabled]="haveAttempt" mat-icon-button (click)="OrderUp(questionIdx)" aria-label="Move Up" *ngIf="questionIdx > 0" matTooltip="Change question order (up)."matTooltipPosition="left">
+                                <mat-icon color="primary">arrow_upward</mat-icon>
+                            </button>
+                            <button  [disabled]="haveAttempt" mat-icon-button (click)="OrderDown(questionIdx)" aria-label="Move Down" *ngIf="questionIdx < questions!.length - 1"  matTooltip="Change question order (down)."matTooltipPosition="below">
+                                <mat-icon color="primary">arrow_downward</mat-icon>
+                            </button>
+                            <button  [disabled]="haveAttempt" mat-icon-button (click)="deleteQuestion(questionIdx)" aria-label="Delete" matTooltip="Delete question."matTooltipPosition="right">
+                                <mat-icon>delete</mat-icon>
+                            </button>
+                        </mat-panel-description>
+                        <div class="add-question-bottom">
+                            <button  [disabled]="haveAttempt" mat-icon-button (click)="addSolution(questionIdx)" aria-label="Add Question" matTooltip="new solution."matTooltipPosition="below">
+                                <mat-icon>add</mat-icon>
+                            </button>
+                        </div>
+                    </div>
+                </mat-expansion-panel>
+            </mat-accordion>
+            <button (click)="newQuestion()" class="btn btn-primary" matTooltip="new Question"matTooltipPosition="below"><mat-icon>add_circle</mat-icon></button>
+        </div>
+    </div>
+</form>

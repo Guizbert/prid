@@ -34,6 +34,7 @@ export class QuizComponent implements OnInit, OnDestroy{
         public dialog: MatDialog,
         public snackBar: MatSnackBar,
         private authentification: AuthenticationService,
+        private router: Router
     ){
         this.state = this.stateService.quizListState;
     }
@@ -42,6 +43,10 @@ export class QuizComponent implements OnInit, OnDestroy{
         if(this.authentification.currentUser?.role === Role.Teacher){
             this.isTeacher = true;
         }
+    }
+    newQuiz(){
+        this.router.navigate(['/quizEdition/0']);
+
     }
     filterChanged(newfilter: KeyboardEvent){
         const str= (newfilter.target as HTMLInputElement).value;
