@@ -19,18 +19,21 @@
 </div>
 
 <div *ngIf="!isTest">
-
+    <p>
+        {{timeStamptQuery | date:'dd/MM/yyyy H:mm:ss'}}
+    </p>
     <p class="correct" *ngIf="correctQuery">
-        Votre requête a retourné une réponse correcte ! 
-        <br>
-        Néanmoins, comparez votre solution avec celle(s) ci-dessous pour voir si vous n'avez pas eu un peu de chance :)
+        {{correctMessage}}
     </p>
     <div class="errors" *ngIf="badQuery">
         <p><b>ERROR :</b></p>
-        <div  *ngFor="let error of errors">
-            <p>{{ error }}</p>
-        </div>
+        <ul>
+            <li *ngFor="let error of errors">
+                <p>{{ error }}</p>
+            </li>
+        </ul>
     </div>
+    
 
     <table>
         <thead>

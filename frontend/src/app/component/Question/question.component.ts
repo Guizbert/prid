@@ -47,6 +47,7 @@ export class QuestionComponent implements OnInit, AfterViewInit  {
   user?: User ;
   attempt?: Attempt;
 
+  timeStamptQuery?:Date | null;
   isreadonly:boolean = false;
 
   @ViewChild("editor") editor!: CodeEditorComponent;
@@ -87,15 +88,12 @@ export class QuestionComponent implements OnInit, AfterViewInit  {
         this.refresh(prev);
       }
     }
-    console.log("prev             <-");
-    console.log(this.question);
   }
   
   nextQuestion() {
     if (this.question.id != undefined) {
       var index =this.otherQuestions.indexOf(this.question.id);
       let next = this.otherQuestions[index+1];
-      console.log(this.otherQuestions.length);
       if (this.otherQuestions[next] !== null && this.otherQuestions.includes(next)) {
         this.router.navigate(['/question/' + next]);
         this.refresh(next);
@@ -136,6 +134,8 @@ export class QuestionComponent implements OnInit, AfterViewInit  {
 
  
  envoyer(newAnswer: boolean) {
+    this.badQuery = false;
+
     // Implement the refresh logic as needed
     console.log("send             <-");
     //doit faire la création si elle n'existe pas; et la modification si elle existe déjà 
@@ -144,20 +144,20 @@ export class QuestionComponent implements OnInit, AfterViewInit  {
     if(cleanedQuery){
       this.questionService.querySent(this.question.id!, cleanedQuery, this.database.name!, newAnswer, this.attempt?.id!).subscribe(
         (data: any) => {
+          console.log(data);
+          this.timeStamptQuery = data.timeStamp;
+          console.log(this.timeStamptQuery);
+
           this.errors = data.error; 
           if(this.errors.length >0)
             this.badQuery = true;
           this.correctMessage = data.correctMessage;
           if(this.correctMessage)
             this.correctQuery = true;
-
+          this.showSoluce = true;
           this.dataT = data;                //toutes les data
           this.dataTable =  data.data;      //que le contenu
           this.columnTable = data.columnNames;  // que les colonnes
-
-          if(newAnswer){
-            console.log("new");
-          }
           /** ============================================ */
           //faire la création de l'attempt et answer
         }
@@ -183,6 +183,7 @@ export class QuestionComponent implements OnInit, AfterViewInit  {
 
 
   refresh(id:number){
+    this.timeStamptQuery = null;
     this.query = "";
     this.dataT = [];
     this.dataTable = [];
@@ -198,7 +199,6 @@ export class QuestionComponent implements OnInit, AfterViewInit  {
             if(res.finish){
               this.editor.readOnly = true;
               this.isreadonly = true;
-              console.log(this.editor.readOnly + " IS READ ONLY ");
             }
             this.answer = res.answers[0];
             if(this.answer){
