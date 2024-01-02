@@ -67,8 +67,6 @@ public class UsersController : ControllerBase
 
             un member DTO connait la liste des messages envoyés et recu et le messageDTO saura rien
             (JSON<-Member DTO -> messageDTO)
-
-
 */
 
         return _mapper.Map<List<UserDTO>>(await _context.Users.ToListAsync());

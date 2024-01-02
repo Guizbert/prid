@@ -31,36 +31,262 @@ public class QuizController : ControllerBase
     private async Task<User?> GetLoggedMember() => await _context.Users.FindAsync(User!.Identity!.Name);
 
     [AllowAnonymous]
-    [HttpGet]
-    public async Task<ActionResult<IEnumerable<QuizDTO>>> GetAll(){
-        return _mapper.Map<List<QuizDTO>>(await _context.Quizzes.ToListAsync());
+    [Authorized(Role.Teacher, Role.Admin)]
+    [HttpGet("all/{userId}")]
+    public async Task<ActionResult<IEnumerable<QuizDTO>>> GetAll(int userId){
+        var quizzes =await _context.Quizzes
+            .Include(q => q.Database)
+            .OrderBy(q => q.Name)
+            .ToListAsync();
+        await UpdateQuizStatusForTeacher(quizzes,userId);
+
+        return _mapper.Map<List<QuizDTO>>(quizzes);
+        // return _mapper.Map<List<QuizDTO>>(await _context.Quizzes.ToListAsync());
     }
 
-    [AllowAnonymous]
+    [Authorized(Role.Teacher, Role.Admin)]
+    private async Task UpdateQuizStatusForTeacher(List<Quiz> quizzes, int userId)
+    {
+        DateTimeOffset today = DateTimeOffset.Now;
+        var user =await _context.Users.FindAsync(userId);
+        foreach (var quiz in quizzes)
+        {
+            if(user.isTeacher()){
+                Console.WriteLine(quiz.IsTest + " <---- ---->" + quiz.Id);
+                if(!quiz.IsTest){
+                    if(quiz.IsPublished){
+                        quiz.Statut = Statut.PUBLIE;                            Console.WriteLine("publie 1 ");
+
+                    }
+                }else if(quiz.IsTest){ 
+                    if(quiz.IsPublished)
+                    {
+                        if (quiz.Finish < today)
+                        {
+                            quiz.Statut = Statut.CLOTURE;
+                        }else {
+                            quiz.Statut = Statut.PUBLIE;
+                            Console.WriteLine("publie 2 ");
+                        }
+                    }
+                       
+                }
+                if(!quiz.IsPublished)
+                    quiz.Statut = Statut.PAS_PUBLIE;
+                 
+            }
+        }
+    }
+
+    [Authorized(Role.Teacher, Role.Admin)]
     [HttpGet("{id}")]
     public async Task<ActionResult<QuizDTO>> GetOne(int id){
-        var quiz = await _context.Quizzes.FindAsync(id);
+        var quiz = await _context.Quizzes
+        .Include(q => q.Database)
+        .Include(q => q.Questions)
+            .ThenInclude(qu => qu.Solutions.OrderBy(s => s.Order))
+        .FirstOrDefaultAsync(q => q.Id == id);
         if (quiz == null)
             return NotFound();
         return _mapper.Map<QuizDTO>(quiz);
     }
 
+    [AllowAnonymous]
+    [HttpPut("updateQuiz")]
+    public async Task<IActionResult> UpdateQuiz(QuizUpdateDTO editQuiz){
+        var quiz = await _context.Quizzes.FindAsync(editQuiz.Id);
+        if(!quiz.IsTest && (quiz.Start != null || quiz.Finish != null)){
+            quiz.Start = null; quiz.Finish = null;
+        }
+        if (quiz == null)
+            return NotFound();
+            
+        await this.DeleteQuestion(quiz.Questions.ToList());
+
+       foreach (var questionDTO in editQuiz.Questions)
+        {
+            //vérif si existe
+            var existingQuestion = await GetExistingQuestion(questionDTO, quiz.Id);
+
+            if (existingQuestion == null)
+            {
+                existingQuestion = await SaveQuestion(questionDTO, quiz.Id);
+
+                if (existingQuestion == null)
+                {
+                    // Handle error or return appropriate response
+                    return BadRequest("Failed to save a question.");
+                }
+            }
+
+            foreach (var solutionDTO in questionDTO.Solutions)
+            {
+                if (!await SaveSolution(solutionDTO, existingQuestion.Id))
+                {
+                    // Handle error or return appropriate response
+                    return BadRequest("Failed to save a solution.");
+                }
+            }
+        }
+        _mapper.Map<QuizUpdateDTO, Quiz>(editQuiz, quiz);
+        
+        //var result = await new QuizValidator(_context).ValidateAsync(quiz);
+
+        // if(!result.IsValid)
+        //     return BadRequest(result);
+        
+        await _context.SaveChangesAsync();
+
+        return NoContent();
+    }
+
+    private async Task<bool> DeleteQuestion(List<Question> questions)
+    {
+        try
+        {
+            foreach (var question in questions)
+            {
+                // Delete all solutions with the question
+                _context.Solutions.RemoveRange(question.Solutions);
+
+                // Delete the question
+                _context.Questions.Remove(question);
+            }
+            //save
+            await _context.SaveChangesAsync();
+
+            return true; // Return true if deletion is done
+        }
+        catch (Exception)
+        {
+            return false; // Return false if deletion fails
+        }
+    }
+
+
+
+    [AllowAnonymous]
     [Authorized(Role.Teacher)]
-    [HttpPost]
-    public async Task<IActionResult> PostTest(QuizDTO quiz){
-        var newQuiz = _mapper.Map<Quiz>(quiz);
-        //est-ce qu'il doit être unique ? 
-        _context.Quizzes.Add(newQuiz);
-        await _context.SaveChangesAsync();//creation en db
+    [HttpPost("postQuiz")]
+    public async Task<ActionResult<QuizDTO>> PostQuiz(QuizSaveDTO savequiz)
+    {
+        if(savequiz.Start == null || savequiz.Finish == null){
+            return BadRequest("Failed to save the quiz (date are null ).");
+
+        }
+        var newQuiz = await SaveQuiz(savequiz);
+
+        if (newQuiz == null)
+        {
+            // Handle error or return appropriate response
+            return BadRequest("Failed to save the quiz.");
+        }
+
+        foreach (var questionDTO in savequiz.Questions) 
+        {
+            var existingQuestion = await GetExistingQuestion(questionDTO, newQuiz.Id);
+
+            if (existingQuestion == null)
+            {
+                existingQuestion = await SaveQuestion(questionDTO, newQuiz.Id);
+
+                if (existingQuestion == null)
+                {
+                    // Handle error or return appropriate response
+                    return BadRequest("Failed to save a question.");
+                }
+            }
+
+            foreach (var solutionDTO in questionDTO.Solutions)
+            {
+                if (!await SaveSolution(solutionDTO, existingQuestion.Id))
+                {
+                    // Handle error or return appropriate response
+                    return BadRequest("Failed to save a solution.");
+                }
+            }
+        }
         return CreatedAtAction(nameof(GetOne), new { id = newQuiz.Id }, _mapper.Map<QuizDTO>(newQuiz));
     }
+
+    private async Task<Quiz> SaveQuiz([FromBody]QuizSaveDTO savequiz)
+    {
+        if(!savequiz.IsTest && (savequiz.Start != null || savequiz.Finish != null)){
+            savequiz.Start = null; savequiz.Finish = null;
+        }
+        var newQuiz = _mapper.Map<Quiz>(savequiz);
+        var result = await new QuizValidator(_context).ValidateOnCreate(newQuiz);
+        if (!result.IsValid)
+        {
+            return null;
+        } 
+
+        _context.Quizzes.Add(newQuiz);
+        await _context.SaveChangesAsync(); // Save changes
+
+        return newQuiz; 
+    }
+
+    private async Task<Question> GetExistingQuestion(QuestionSaveDTO questionDTO, int quizId)
+    {
+        // Check if the question already exists
+        return await _context.Questions
+            .FirstOrDefaultAsync(q =>
+                q.QuizId == quizId &&
+                q.Order == questionDTO.Order &&
+                q.Body == questionDTO.Body);
+    }
+
+    private async Task<Question> SaveQuestion(QuestionSaveDTO questionDTO, int quizId)
+    {
+        var questiondto = new QuestionSaveDTO
+        {
+            Order = questionDTO.Order,
+            Body = questionDTO.Body,
+            QuizId = quizId,
+        };
+
+        var newQuestion = _mapper.Map<Question>(questiondto);
+
+        _context.Questions.Add(newQuestion);
+        await _context.SaveChangesAsync(); // Save changes to the database
+
+        return newQuestion;
+    }
+
+    private async Task<bool> SaveSolution(SolutionDTO solutionDTO, int questionId)
+    {
+        // Check if the solution already exists
+        var existingSolution = await _context.Solutions
+            .FirstOrDefaultAsync(s =>
+                s.QuestionId == questionId &&
+                s.Order == solutionDTO.Order &&
+                s.Sql == solutionDTO.Sql);
+
+        if (existingSolution == null)
+        {
+            var solution = new Solution
+            {
+                Order = solutionDTO.Order,
+                Sql = solutionDTO.Sql,
+                QuestionId = questionId,
+            };
+
+            _context.Solutions.Add(solution);
+            await _context.SaveChangesAsync(); // Save changes to the database
+        }
+
+        return true; // Return success, you can modify this based on your needs
+    }
+
+
 
     [AllowAnonymous]
     [Authorized(Role.Teacher, Role.Student, Role.Admin)]
     [HttpGet("test/{userId}")]
     public async Task<ActionResult<IEnumerable<QuizDTO>>> GetTest(int userId){
         var test =  await _context.Quizzes
-            .Where(q => q.IsTest == true)
+            .Where(q => q.IsTest == true  && q.IsPublished)
             .Include(q => q.Database)
             //.Include(q => q.Attempts)
             .OrderBy(q => q.Name)
@@ -80,7 +306,7 @@ public class QuizController : ControllerBase
     {
 
         var quizzes = await _context.Quizzes
-            .Where(q => q.IsTest == false)
+            .Where(q => q.IsTest == false  && q.IsPublished)
             .Include(q => q.Database)
             //.Include(q => q.Attempts)
             .OrderBy(q => q.Name)
@@ -96,7 +322,8 @@ public class QuizController : ControllerBase
     private async Task UpdateQuizStatusForCurrentUser(List<Quiz> quizzes, int userId)
     {
         DateTimeOffset today = DateTimeOffset.Now;
-
+        var user =await _context.Users.FindAsync(userId);
+        
         foreach (var quiz in quizzes)
         {
             if(quiz.Finish < today){
@@ -124,21 +351,22 @@ public class QuizController : ControllerBase
                                                         .Select(a => a.IsCorrect)
                                                         .Distinct()
                                                         .CountAsync();
-                            Console.WriteLine(correctAnswersCount + " CORRECT ANSWER ..........");
                             quiz.Note = ((correctAnswersCount * 10)/ totalQuestions) ;
                         }
                     }
                     else
                         quiz.Statut = Statut.EN_COURS;
-                 
+                
 
                     // Update quiz status based on attempt
                     //quiz.Status = attempt.Status;
                 }else
                     quiz.Statut = Statut.PAS_COMMENCE;
-                Console.WriteLine("statut : " + quiz.Statut);
+                //Console.WriteLine("statut : " + quiz.Statut);
 
             }
+           
+            
         }
     }
 
@@ -174,6 +402,18 @@ public class QuizController : ControllerBase
             .Where(q => q.Id == quizId)
             .Select(q => q.Attempts.Any(a => a.UserId == userId)) // Vérifie si l'utilisateur a déjà une tentative
             .FirstOrDefaultAsync();
+
+        return Ok(hasAttempt);
+    }
+
+    [AllowAnonymous]
+    [Authorized(Role.Teacher, Role.Student, Role.Admin)]
+    [HttpGet("anyAttempt/{quizId}")]
+    public async Task<ActionResult<bool>> AnyAttempt(int quizId)
+    {
+        bool hasAttempt = await _context.Quizzes
+            .Where(q => q.Id == quizId && q.Attempts.Any()) 
+            .AnyAsync();
 
         return Ok(hasAttempt);
     }
@@ -224,8 +464,57 @@ public class QuizController : ControllerBase
         return Ok(attemptDTO);
     } 
 
-//faire le put pour la modif
 
-//faire le delete
+
+    [AllowAnonymous]
+    [Authorized(Role.Teacher, Role.Student, Role.Admin)]
+    [HttpGet("getAllDatabase")]
+    public async Task<ActionResult<IEnumerable<Database>>> GetAllDatabase(){
+        return _mapper.Map<List<Database>>(await _context.Databases.ToListAsync());
+    }
+
+
+    [AllowAnonymous]
+    [Authorized(Role.Teacher, Role.Admin)]
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> DeleteQuiz(int id)
+    {
+        var quiz = await _context.Quizzes
+            .Include(q => q.Questions)
+                .ThenInclude(qu => qu.Solutions)
+            .Include(q => q.Attempts)
+            .FirstOrDefaultAsync(q => q.Id == id);
+
+        if (quiz == null)
+        {
+            return NotFound(); // or any other appropriate status code
+        }
+
+        // Delete solutions
+        foreach (var question in quiz.Questions)
+        {
+            var answers = _context.Answers.Where(a => a.QuestionId == question.Id);
+            _context.Answers.RemoveRange(answers);// Delete answers
+            _context.Solutions.RemoveRange(question.Solutions);// Delete Solutions
+        }
+        
+        var attempts = _context.Attempts.Where(a => a.QuizId == id);
+        _context.Attempts.RemoveRange(attempts);// Delete answers
+
+        // Delete questions
+        _context.Questions.RemoveRange(quiz.Questions);
+
+        // Delete the quiz
+        _context.Quizzes.Remove(quiz);
+
+        // Save changes
+        await _context.SaveChangesAsync();
+
+        return NoContent();
+    }
+
+
+
+
 
 }

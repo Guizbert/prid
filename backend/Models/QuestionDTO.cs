@@ -13,3 +13,12 @@ public class QuestionDTO{
     public virtual ICollection<SolutionDTO> Solutions {get;set;} = new HashSet<SolutionDTO>();
 
 }
+
+public class QuestionSaveDTO{
+    public int Id{get;set;}
+    public int Order{get;set;}
+    public string Body{get;set;}= null!;
+    public int QuizId{get;set;}
+    
+    public virtual ICollection<SolutionDTO> Solutions {get;set;} = new HashSet<SolutionDTO>();
+}

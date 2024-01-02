@@ -8,7 +8,7 @@ public class SqlSolutionDTO{
     public string DbName{get; set;}="";
     public string[] solutions{get;set;} =new string[0];
     public bool isCorrect{get;set;}
-
+    public DateTimeOffset? TimeStamp{get;set;}
 
     public SqlSolutionDTO CheckQueries(SqlSolutionDTO solutionQuery){
         //check col length et data lenght

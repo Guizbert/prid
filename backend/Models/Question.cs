@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 
 
 namespace prid_2324_a12.Models;
@@ -7,7 +8,7 @@ namespace prid_2324_a12.Models;
 public class Question {
     [Key]
     public int Id {get;set;}
-    [ForeignKey(nameof(QuizId))]
+    [ForeignKey(nameof(QuizId))]  [JsonIgnore]
     public Quiz Quiz{get;set;}= null!;
     public int QuizId{get;set;}
     

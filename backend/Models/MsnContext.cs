@@ -105,6 +105,13 @@ public class MsnContext : DbContext
             .HasForeignKey(s => s.QuestionId)
             .OnDelete(DeleteBehavior.ClientCascade);
 
+       modelBuilder.Entity<Question>()
+        .HasOne(q => q.Quiz)
+        .WithMany(q => q.Questions)
+        .HasForeignKey(q => q.QuizId)
+        .IsRequired(); 
+
+ 
         /***** SOLUTION *****/
         modelBuilder.Entity<Solution>()
             .Property(s => s.Id)

@@ -16,16 +16,27 @@ public class QuizDTO{
     public DateTimeOffset? Finish {get;set;}
     public ICollection<Question> Questions {get;set;} = new List<Question>();
     public ICollection<Attempt> Attempts {get;set;} = new List<Attempt>();
-   
  }
 
+public class QuizSaveDTO{
+    public int DatabaseId{get;set;}
+    public string Name{get;set;}= null!;
+    public string? Description {get;set;}
+    public bool IsPublished {get;set;}
+    public bool IsTest {get; set;}
+    public DateTimeOffset? Start {get;set;}
+    public DateTimeOffset? Finish {get;set;}
+    public ICollection<QuestionSaveDTO> Questions {get;set;} = new List<QuestionSaveDTO>();
+}
 
-// public class QuizWithQuestion : QuizDTO
-// {
-//     public ICollection<Question> Questions {get;set;} = new HashSet<Question>();
-// }
-// public class QuizWithAttempt : QuizDTO{
-//         public ICollection<Attempt> Attempts {get;set;} = new HashSet<Attempt>();
-
-//  }
- 
+public class QuizUpdateDTO{
+    public int Id {get;set;}
+    public int DatabaseId{get;set;}
+    public string Name{get;set;}= null!;
+    public string? Description {get;set;}
+    public bool IsPublished {get;set;}
+    public bool IsTest {get; set;}
+    public DateTimeOffset? Start {get;set;}
+    public DateTimeOffset? Finish {get;set;}
+    public ICollection<QuestionSaveDTO> Questions {get;set;} = new List<QuestionSaveDTO>();
+}

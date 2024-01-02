@@ -12,6 +12,8 @@ public enum Statut{
     EN_COURS=2,
     CLOTURE =3,
     FINI= 4,
+    PUBLIE= 5,
+    PAS_PUBLIE=6,
 }
 
 //rajouter la property statut et check en backend le statut
@@ -41,6 +43,7 @@ public class Quiz{
     // public int CreatorId {get;set;}
     //devrait avoir une seule db ??
    // public ICollection<Database> Databases {get;set;} = new HashSet<Database>();
+    [JsonIgnore]
     public ICollection<Question> Questions {get;set;} = new HashSet<Question>();
 
     [JsonIgnore]
