@@ -23,7 +23,12 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.Questions, opt => opt.MapFrom(src => src.Questions))
             .ForMember(dst => dst.Attempts, opt => opt.MapFrom(src => src.Attempts));
 
+        CreateMap<QuizSaveDTO, Quiz>();//NEW quiz
+        CreateMap<Quiz, QuizSaveDTO>();
 
+        CreateMap<Quiz, QuizUpdateDTO>();//EDIT quiz
+        CreateMap<QuizUpdateDTO, Quiz>();
+        
         CreateMap<QuizDTO, Quiz>()
             .ForMember(dest => dest.Questions, opt => opt.MapFrom(src => src.Questions.Select(q => new Question { Id = q.Id, Order = q.Order, Body = q.Body, QuizId = q.QuizId })))
             .ForMember(dst => dst.Attempts, opt => opt.MapFrom(src => src.Attempts));
@@ -34,6 +39,10 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.Database, opt => opt.MapFrom(src => src.Quiz.Database));
         CreateMap<QuestionDTO, Question>();
 
+        CreateMap<Question, QuestionSaveDTO>();
+        CreateMap<QuestionSaveDTO, Question>();
+
+       
 
         CreateMap<Solution,SolutionDTO>();
         CreateMap<SolutionDTO,Solution>();
