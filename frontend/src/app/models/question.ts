@@ -15,17 +15,5 @@ export class Question{
     database?: Database;
     solutions?: Solution[];
     quizIsTest?: boolean;
-
-    get display(): string {
-       
-        return `${this.quizName} ${this.order}  `;
-    }
-
-    get displayBody():string{
-        return `${this.body}`;
-
-    }
-    // get evaluation(): number{
-        
-    // }
+    openedPanel?:boolean= false;
 }

@@ -9,7 +9,5 @@ export class Solution{
     sql?:string;
 
 
-    get display(): string {
-        return `${this.sql}`;
-    }
+
 }

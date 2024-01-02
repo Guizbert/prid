@@ -9,6 +9,8 @@ export enum Statut{
     EN_COURS=2,
     CLOTURE =3,
     FINI= 4,
+    PUBLIE = 5,
+    PAS_PUBLIE=6,
 }
 export class Quiz{
     id?: number;
@@ -28,7 +30,7 @@ export class Quiz{
     questions?: Question[];
     
     get display(): string {
-        console.log(this.statut);
+        
         return `${this.name} ${this.database} ${this.getstatut}  ${this.action} ${this.note}`;
     }
 
@@ -46,11 +48,14 @@ export class Quiz{
                 return "CLOTURE";
             case Statut.FINI:
                 return "FINI";
+            case Statut.PUBLIE:
+                return "PUBLIE";
+            case Statut.PAS_PUBLIE:
+                    return "PAS_PUBLIE";
             default:
                 return "PAS_COMMENCE";
         }
     }
-    
 
     public get getNote() : string{
         if(this.note){
@@ -58,4 +63,28 @@ export class Quiz{
         }
         return "N/A";
     }
+}
+
+export class QuizSave{
+    DatabaseId?: number;
+    Name?: string;
+    Description?: string;
+    IsPublished?: boolean;
+    IsTest?: boolean;
+    Start?: Date;
+    Finish?: Date;
+    Questions?: Question[];
+   
+}
+
+export class QuizEdit{
+    Id?:number;
+    DatabaseId?: number;
+    Name?: string;
+    Description?: string;
+    IsPublished?: boolean;
+    IsTest?: boolean;
+    Start?: Date;
+    Finish?: Date;
+    Questions?: Question[];
 }

@@ -1,12 +1,13 @@
 import { Injectable, Inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 
-import { Quiz } from '../models/quiz';
+import { Quiz, QuizEdit, QuizSave } from '../models/quiz';
 import { Question } from '../models/question';
 import { catchError, map } from 'rxjs/operators';
 import { Observable, of } from 'rxjs';
 import { plainToInstance } from 'class-transformer'; 
 import { Attempt } from '../models/Attempt';
+import { Database } from '../models/database';
 
 @Injectable({ providedIn: 'root' })
 export class QuizService{
@@ -21,8 +22,8 @@ export class QuizService{
     get attemptId(): number {
         return this._attemptId!;
     }
-    getAll(): Observable<Quiz[]> {
-        return this.http.get<any[]>(`${this.baseUrl}api/quiz`).pipe(
+    getAll(userId:number): Observable<Quiz[]> {
+        return this.http.get<Quiz[]>(`${this.baseUrl}api/quiz/all/${userId}`).pipe(
             map(res => plainToInstance(Quiz, res))
         );
     }
@@ -41,7 +42,7 @@ export class QuizService{
         return this.http.get<Quiz>(`${this.baseUrl}api/quiz/${id}`).pipe(
             map(q => plainToInstance(Quiz,q)),
             catchError(err => of(null))
-        )
+        );
     }
     getQuestions(id: number) {
         return this.http.get<any[]>(`${this.baseUrl}api/quiz/getQuestions/${id}`).pipe(
@@ -56,6 +57,9 @@ export class QuizService{
     haveAttempt(quizId: number, userId:number){
         return this.http.get<any>(`${this.baseUrl}api/quiz/haveAttempt/${quizId}/${userId}`);
     }
+    anyAttempt(quizId: number){
+        return this.http.get<any>(`${this.baseUrl}api/quiz/anyAttempt/${quizId}`);
+    }
     getAttempt(quizId: number, userId:number, questionId:number){
         return this.http.get<any>(`${this.baseUrl}api/quiz/getAttempt/${quizId}/${userId}/${questionId}`); //return attempt et answer de la question
     }
@@ -65,7 +69,26 @@ export class QuizService{
     newAttempt(quizId: number, userId: number): Observable<Attempt> {
         return this.http.post<Attempt>(`${this.baseUrl}api/quiz/newAttempt/${quizId}/${userId}`, {});
     }
+// côté quiz edition : 
 
-   
+    getAllDb() :Observable<any[]>{
+        return this.http.get<any[]>(`${this.baseUrl}api/quiz/getAllDatabase`); //return attempt et answer de la question
+
+    }
+    postQuiz(savequiz: QuizSave) {
+        return this.http.post<QuizSave>(`${this.baseUrl}api/quiz/postQuiz`, savequiz);
+    }
+
+    updateQuiz(quiz:QuizEdit){
+        return this.http.put<QuizEdit>(`${this.baseUrl}api/quiz/updateQuiz`,quiz);
+    }
+    
+    deleteQuiz(quizId: number){
+        return this.http.delete<Quiz>(`${this.baseUrl}api/quiz/${quizId}`);
+    }
+    // getDbById(dbId:number)()
+    // {
+
+    // }
       
 }

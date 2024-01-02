@@ -127,8 +127,6 @@ export class CodeEditorComponent implements AfterViewInit, ControlValueAccessor 
                     const columns = await CodeEditorComponent.getColumnNames(CodeEditorComponent._database.name!);
                     const keywords = CodeEditorComponent.getKeywords();
 
-                    columns.forEach((a:any) => { console.log('Column:', a); });
-                    tables.forEach((a : any) => { console.log('Table:', a); });
 
                     // Crée un tableau pour stocker les différents types de complétions.
                     const completions: any[] = [];
@@ -159,7 +157,6 @@ export class CodeEditorComponent implements AfterViewInit, ControlValueAccessor 
     private static getTableNames(dbname: string): Promise<any[]> {
         return new Promise<any[]>((resolve) => {
             CodeEditorComponent._questionService.getData(dbname).subscribe((res: any)=> {
-                console.log("res get col : " + res);
                 resolve(res);
             });
         });
@@ -168,7 +165,6 @@ export class CodeEditorComponent implements AfterViewInit, ControlValueAccessor 
     private static getColumnNames(dbname: string): Promise<any[]> {
         return new Promise<any[]>((resolve) => {
             CodeEditorComponent._questionService.getColumns(dbname).subscribe((res: any)=> {
-                console.log("res get data : " + res);
                 resolve(res);
             });
         });

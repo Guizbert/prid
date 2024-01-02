@@ -11,6 +11,7 @@ import { UnknownComponent } from '../component/unknown/unknown.component';
 import { AuthGuard } from '../services/auth.guard';
 import { Role } from '../models/user';
 import { QuestionComponent } from '../component/question/question.component';
+import { QuizEditionComponent } from '../component/quiz/quiz-edition.component';
 
 const appRoutes: Routes = [
     { path: '', component: HomeComponent, pathMatch: 'full' },
@@ -33,6 +34,12 @@ const appRoutes: Routes = [
     {
         path: 'quiz',
         component: QuizComponent
+    },
+    {
+        path: 'quizEdition/:id',
+        component: QuizEditionComponent,
+        canActivate: [AuthGuard],
+        data: { roles: [Role.Teacher] }
     },
     {
         path: 'question/:id',

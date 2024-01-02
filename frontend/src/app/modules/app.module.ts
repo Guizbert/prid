@@ -16,7 +16,9 @@ import { JwtInterceptor } from '../interceptors/jwt.interceptor';
 import { LoginComponent } from '../component/login/login.component';
 import { SignUpComponent } from '../component/signup/signup.component';
 import { QuizComponent } from '../component/quiz/quiz.component';
+import { QuizEditionComponent } from '../component/quiz/quiz-edition.component';
 import { QuizTrainingComponent } from '../component/quiz/quiz-training.component';
+import { QuizTeacherComponent}  from '../component/quiz/quiz-teacher.component';
 import { QuestionComponent } from '../component/question/question.component';
 import { CodeEditorComponent } from '../component/code-editor/code-editor.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
@@ -24,6 +26,8 @@ import { SharedModule } from './shared.module';
 import { MAT_DATE_FORMATS, MAT_DATE_LOCALE } from '@angular/material/core';
 import { fr } from 'date-fns/locale';
 import { ExitDialogComponent } from '../component/question/ExitDialogComponent';
+import { ConfirmDeleteComponent } from '../component/quiz/ConfirmDelete.component';
+import { TruncatePipe } from '../helpers/truncatePipe ';
 
 @NgModule({
     declarations: [
@@ -36,12 +40,16 @@ import { ExitDialogComponent } from '../component/question/ExitDialogComponent';
         LoginComponent,
         SignUpComponent,
         QuizComponent,
+        QuizTeacherComponent,
         QuizTrainingComponent,
+        ConfirmDeleteComponent,
+        QuizEditionComponent,
         QuestionComponent,
         UnknownComponent,
         CodeEditorComponent,
         RestrictedComponent,
-        ExitDialogComponent
+        ExitDialogComponent,
+        TruncatePipe
     ],
     imports: [
         BrowserModule.withServerTransition({ appId: 'ng-cli-universal' }),
