@@ -37,3 +37,13 @@ export class User {
         return age;
     }
 }
+
+export class UserSave{
+    pseudo?:string;
+    email?: string;
+    firstName?: string;
+    lastName?: string;
+    Birthdate?: Date;
+    password?: string;
+   
+}

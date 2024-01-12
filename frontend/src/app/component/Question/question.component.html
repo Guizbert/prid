@@ -17,11 +17,11 @@
     <button (click)="delete()"    >Effacer    </button>
     <button *ngIf="!isTest" (click)="voirSoluce()">Voir soluce</button>
 </div>
+<p>
+    {{timeStamptQuery | date:'dd/MM/yyyy H:mm:ss'}}
+</p>
+<div *ngIf="!isTest || isRead">
 
-<div *ngIf="!isTest">
-    <p>
-        {{timeStamptQuery | date:'dd/MM/yyyy H:mm:ss'}}
-    </p>
     <p class="correct" *ngIf="correctQuery">
         {{correctMessage}}
     </p>

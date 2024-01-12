@@ -86,6 +86,10 @@ export class QuizService{
     deleteQuiz(quizId: number){
         return this.http.delete<Quiz>(`${this.baseUrl}api/quiz/${quizId}`);
     }
+
+    nameAvailable(name:string, quizId:number){
+        return this.http.get<any>(`${this.baseUrl}api/quiz/NameAvailable/${name}/${quizId}`);
+    }
     // getDbById(dbId:number)()
     // {
 

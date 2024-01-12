@@ -46,7 +46,7 @@
         <ng-container matColumnDef="actions">
             <th mat-header-cell *matHeaderCellDef> Actions </th>
             <td mat-cell *matCellDef="let row">
-                <div class="" *ngIf="!row.isClosed">
+                <div class="" *ngIf="!row.isClosed && row.canInteract">
                     <a (click)="attempt(row.id)" *ngIf="row.getstatut =='EN_COURS'"><mat-icon>edit</mat-icon></a>
                     <a (click)="newAttempt(row.id)" *ngIf="!row.haveAttempt"><mat-icon>add_circle</mat-icon></a>
                     <a (click)="checkLastAttempt(row.id)" *ngIf="row.haveAttempt && row.getstatut =='FINI' "><mat-icon>book</mat-icon></a>

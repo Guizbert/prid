@@ -7,8 +7,12 @@
         <div class="col-sm-4">
             <mat-form-field >
                 <mat-label>Name</mat-label>
-                <input matInput [formControl]="ctlName" required appSetFocus  [readonly]="haveAttempt"> 
+                <input matInput [formControl]="ctlName" required appSetFocus (change)="checkQuizName()"  [readonly]="haveAttempt"> 
                 <mat-error class="field-error" *ngIf="ctlName.hasError('required')">Required</mat-error>
+                <mat-error class="field-error" *ngIf="quizEditionForm.hasError('badNameLength')">Must be 3 characters minimum</mat-error>
+                <mat-error class="field-error" *ngIf="isUnique == true">Name already taken</mat-error>
+
+
             <!-- faire boolean pour readonly isNew -->
             </mat-form-field>
 
@@ -16,7 +20,8 @@
             <mat-form-field>
                 <mat-label>Description</mat-label>
                 <textarea matInput [formControl]="ctlDescription" rows="4"  [readonly]="haveAttempt"></textarea>
-                <!-- <mat-error class="field-error" *ngIf="ctlDescription.hasError('required')">Required</mat-error> -->
+                <mat-error class="field-error" *ngIf="ctlDescription.hasError('required')">Required</mat-error>
+
             </mat-form-field>
 
             <div class="radioGroup" >
@@ -45,15 +50,15 @@
                         {{db.name}}
                     </mat-option>
                 </mat-select>
-            </mat-form-field> 
-        
+                <mat-error class="field-error" *ngIf="ctlDb.hasError('required')">Chose a db</mat-error>
+            </mat-form-field>
         </div>
         <div class="col-sm-4">
             <mat-slide-toggle [formControl]="ctlIsPublished" [disabled]="haveAttempt"><span>Published</span></mat-slide-toggle>
         </div>
         <div class="row mt-2">
             <div class="col-sm-6">
-                <button mat-stroked-button (click)="saveQuiz()" [disabled]="quizEditionForm.invalid || haveAttempt" class="btn btn-primary" rows="4">Save</button>
+                <button mat-stroked-button (click)="saveQuiz()" [disabled]="!canSave()" class="btn btn-primary" rows="4">Save</button>
             </div>
             <div class="col-sm-6" *ngIf="editMode">
                 <button mat-stroked-button [disabled]="!isExistingQuiz" (click)="delete()"  color="warn" class="btn btn-primary" rows="4">Delete</button>
@@ -67,8 +72,6 @@
                     <input matInput [matDatepicker]="pickerStart" [formControl]="ctlStartDate" [min]="today" [disabled]="haveAttempt">
                     <mat-datepicker-toggle matSuffix [for]="pickerStart"></mat-datepicker-toggle>
                     <mat-datepicker #pickerStart></mat-datepicker>
-                    <mat-error class="field-error" *ngIf="ctlStartDate.hasError('inPast')">Can't be in the past</mat-error>
-                    <mat-error class="field-error" *ngIf="ctlStartDate.hasError('   ')">Can't start after the end</mat-error>
                   </mat-form-field>
               
                   <mat-form-field appearance="fill">
@@ -76,10 +79,10 @@
                     <input matInput [matDatepicker]="pickerFinish" [formControl]="ctlFinishDate" [min]="today" [disabled]="haveAttempt">
                     <mat-datepicker-toggle matSuffix [for]="pickerFinish"></mat-datepicker-toggle>
                     <mat-datepicker #pickerFinish></mat-datepicker>
-                    <mat-error class="field-error" *ngIf="ctlFinishDate.hasError('beforeStart')">Can't end before start</mat-error>
-                    <mat-error class="field-error" *ngIf="ctlFinishDate.hasError('beforeToday')">Can't end before today</mat-error>
                   </mat-form-field>
                 </div>
+                <mat-error class="field-error" *ngIf="quizEditionForm.hasError('dateMismatch')">Can't be in the past</mat-error>
+
             </ng-container>
         </mat-form-field>
     </div>
@@ -87,6 +90,7 @@
     <div class="row">
         <div class="col-sm-12">
             <mat-accordion [multi]="true">
+                <mat-error class="field-error" *ngIf="checkQuestions()">Need at least 1 question </mat-error>
                 <mat-expansion-panel *ngFor="let question of questions; let questionIdx = index" (opened)="question.openedPanel = true" (closed)="question.openedPanel=false">
                     <mat-expansion-panel-header>
                         <mat-panel-title class="titleQuestion">
@@ -96,6 +100,7 @@
                     </mat-expansion-panel-header>
                     <div class="expansion-panel-content">
                         <textarea MatInput class="large-textarea" [(ngModel)]="question.body" [ngModelOptions]="{standalone: true}"  [disabled]="haveAttempt">{{ question.body  }}</textarea>
+                        <mat-error class="field-error" *ngIf="checkSolutions(questionIdx)">Need at least 1 solution </mat-error>
 
                         <div *ngFor="let solution of question.solutions; let solutionIdx = index" >
                             <p> Solution {{ solutionIdx + 1}}</p>

@@ -41,6 +41,7 @@ export class QuestionComponent implements OnInit, AfterViewInit  {
   dataT: string[] =[];        //les deux réunis
 
   badQuery: boolean =false;
+  isRead: boolean = false;
   correctQuery: boolean =false;
   errors: string[] = [];
   correctMessage: string = "";
@@ -197,6 +198,7 @@ export class QuestionComponent implements OnInit, AfterViewInit  {
             this.attempt = res;
             console.log(res);
             if(res.finish){
+              this.isRead = true; 
               this.editor.readOnly = true;
               this.isreadonly = true;
             }

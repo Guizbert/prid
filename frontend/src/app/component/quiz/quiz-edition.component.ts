@@ -49,6 +49,7 @@ export class QuizEditionComponent implements OnInit{
     questionsToDelete: Question[] = [];
     solution: Solution[] = [];
     haveAttempt: boolean = false;
+    isUnique: boolean = false;
     newQuestionInProgress: boolean = false;
 
     //ajout question:
@@ -57,6 +58,7 @@ export class QuizEditionComponent implements OnInit{
     constructor(
         public authService: AuthenticationService,
         private quizService: QuizService,
+        private questionService: QuestionService,
         public dialog : MatDialog,
         public router: Router,
         private fb: FormBuilder,
@@ -83,13 +85,21 @@ export class QuizEditionComponent implements OnInit{
     // Ajoutez la logique de validation personnalisée ici
     private customValidator(group: FormGroup): ValidationErrors | null {
         // Exemple de validation personnalisée
+
+        //name
+        const name = group.get('name')?.value;
+        if(name.length < 3)
+            return { 'badNameLength' : true};
+        //db
+        const db = group.get('db')?.value;
+        if(db == null)
+            return { 'noDb' : true};
+        //date
         const startDate = group.get('startDate')?.value;
         const finishDate = group.get('finishDate')?.value;
-    
         if (startDate && finishDate && startDate > finishDate) {
             return { 'dateMismatch': true };
         }
-    
         return null;
     }
 
@@ -101,6 +111,9 @@ export class QuizEditionComponent implements OnInit{
             this.isTest = false;
     }
     ngOnInit(): void { 
+        
+        this.user = this.authService.currentUser;
+        this.isAdmin = this.user?.role == Role.Teacher;
         let id = this.activatedRoute.snapshot.params['id'];
         this.quizService.getAllDb().subscribe(res => {
             this.databases = res;
@@ -119,14 +132,13 @@ export class QuizEditionComponent implements OnInit{
                         console.log(res);
                     }
                 )
+                this.checkQuizName(); 
             });
             this.isExistingQuiz = true;
         }else {
             this.isExistingQuiz = false;
         }
         // pour check si y a un attempt etc
-        this.user = this.authService.currentUser;
-        this.isAdmin = this.user?.role == Role.Teacher
     }
     saveQuiz() {
         let id = this.activatedRoute.snapshot.params['id'];
@@ -289,4 +301,55 @@ export class QuizEditionComponent implements OnInit{
     onDatabaseChange(database: Database): void {
         this.database = database;
     }
+    checkQuestions(){
+        if(this.questions?.length ==0)
+            return true;
+        return false;
+    }
+    checkSolutions(qIndex: number){
+        const q = this.questions![qIndex];
+        if(q.solutions?.length ==0)
+            return true;
+        return false;
+    }
+
+    checkQuizName(){
+        let id = this.activatedRoute.snapshot.params['id'];
+        console.log(id + " - " + this.quizEditionForm.value.name);
+        this.quizService.nameAvailable(this.quizEditionForm.value.name, id).subscribe(res => {
+            this.isUnique = res; // true = quiz existant
+            console.log(res +" <-------");
+        })
+    }
+
+    canSave() {
+        if (this.quizEditionForm.invalid) {
+            console.log("Invalid form");
+            return false;
+        }
+        if (this.isUnique == false) {
+            console.log("Not unique");
+            return false;
+        }
+        if (this.checkQuestions()) {
+            console.log("Some questions are missing solutions");
+            return false;
+        }
+        if (this.database == null) {
+            console.log("Database is null");
+            return false;
+        }
+        if (this.haveAttempt) {
+            console.log("There is an attempt");
+            return false;
+        }
+        if (this.questions?.some(q => q.body!.length < 3 || q.solutions?.some(solution => solution.sql!.length < 3))) {
+            console.log("Some questions or solutions have less than 3 characters");
+            return false;
+        }
+    
+        console.log("All conditions passed");
+        return true;
+    }
+    
 }

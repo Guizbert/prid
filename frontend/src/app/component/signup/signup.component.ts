@@ -62,7 +62,7 @@ export class SignUpComponent{
     }
 
     signup(){
-        this.authService.signup(this.ctlPseudo.value, this.ctlEmail.value, this.ctlPassword.value).subscribe(() => {
+        this.authService.signup(this.ctlPseudo.value, this.ctlEmail.value, this.ctlPassword.value,this.ctlFirstname.value, this.ctlLastName.value, this.ctlBirthdate.value).subscribe(() => {
             if(this.authService.currentUser){
                 this.router.navigate(['/quiz']);
             }

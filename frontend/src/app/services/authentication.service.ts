@@ -52,8 +52,8 @@ export class AuthenticationService {
     public isPseudoAvailable(pseudo: string): Observable<boolean> {
         return this.http.get<boolean>(`${this.baseUrl}api/users/available/${pseudo}`);
     }
-    public signup(pseudo: string, email: string, password:string): Observable<User>{
-        return this.http.post<User>(`${this.baseUrl}api/users/signup`, {pseudo: pseudo, email: email, password: password}).pipe(
+    public signup(pseudo: string, email: string, password:string, firstName:string, lastName:string, birthdate: Date): Observable<User>{
+        return this.http.post<User>(`${this.baseUrl}api/users/signup`, {pseudo: pseudo, email: email, password: password, lastName:lastName,firstName:firstName, birthdate:birthdate}).pipe(
             mergeMap(res => this.login(pseudo,  password)),
         );
     }

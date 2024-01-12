@@ -146,6 +146,5 @@ export class QuizTrainingComponent implements OnInit,  AfterViewInit{
     load(from: string): void {
         this.dataSource.filter = this.filter?? "";
     }
-
     
 }

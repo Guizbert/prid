@@ -70,6 +70,9 @@ export class QuestionService{
         return this.http.get<any[]>(`${this.baseUrl}api/question/getdata/${dbname}`); 
     }
 
+    checkName(name:string){
+        return this.http.get<any[]>(`${this.baseUrl}api/question/NameAvailable/${name}`); 
+    }
 
   
 }

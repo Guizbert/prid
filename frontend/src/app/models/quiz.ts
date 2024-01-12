@@ -20,6 +20,7 @@ export class Quiz{
     isClosed?: boolean;
     isTest?: boolean;
     haveAttempt?: boolean;
+    canInteract?: boolean;
     start?: Date;
     finish?: Date;
     database?: Database;
