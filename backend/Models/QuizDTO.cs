@@ -10,6 +10,7 @@ public class QuizDTO{
     public bool IsClosed {get;set;}    
     public bool IsTest {get; set;}
     public bool HaveAttempt{get;set;}
+    public bool CanInteract{get;set;}
     public Statut Statut{get;set;}
     public int Note{get;set;}
     public DateTimeOffset? Start {get;set;}

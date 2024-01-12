@@ -18,6 +18,9 @@ public class MappingProfile : Profile
 
         CreateMap<User, UserWithPasswordDTO>();
         CreateMap<UserWithPasswordDTO, User>();
+        
+        CreateMap<User, Student>();
+        CreateMap<Student, User>();
 
         CreateMap<Quiz, QuizDTO>()
             .ForMember(dest => dest.Questions, opt => opt.MapFrom(src => src.Questions))

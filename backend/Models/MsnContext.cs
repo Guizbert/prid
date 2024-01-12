@@ -324,6 +324,9 @@ public class MsnContext : DbContext
     }
 
     public DbSet<User> Users => Set<User>();
+    public DbSet<Student> Students=> Set<Student>();
+    public DbSet<Teacher> Teachers=> Set<Teacher>();
+
     public DbSet<Answer> Answers => Set<Answer>();
     public DbSet<Attempt> Attempts => Set<Attempt>();
     public DbSet<Database> Databases => Set<Database>();

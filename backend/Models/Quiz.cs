@@ -37,6 +37,8 @@ public class Quiz{
     [NotMapped]
     public int Note{get;set;}
     [NotMapped]
+    public bool CanInteract{get;set;}
+    [NotMapped]
     public bool HaveAttempt{get;set;}
     // [ForeignKey(nameof(CreatorId))]
     // public User Creator {get;set;}
