@@ -30,13 +30,11 @@ public class QuestionController : ControllerBase
         _mapper =mapper; 
     }
 
-    [AllowAnonymous]
     [HttpGet]
     public async Task<ActionResult<IEnumerable<QuestionDTO>>> GetAll(){
         return _mapper.Map<List<QuestionDTO>>(await _context.Questions.ToListAsync());
     }
 
-    [AllowAnonymous]
     [HttpGet("getFirstQuestion/{quizId}/{userId}")]
     public async Task<Question?> GetFirstQuestion(int quizId, int userId){
         var attempt = await _context.Attempts.Where(a => a.QuizId == quizId && a.UserId == userId).OrderByDescending(a => a.Finish).FirstOrDefaultAsync();
@@ -83,14 +81,12 @@ public class QuestionController : ControllerBase
         return question[0];
     }
 
-    [AllowAnonymous]
     [HttpGet("getFirstQuestionReadOnly/{quizId}/{userId}")]
     public async Task<Question?> GetFirstQuestionReadOnly(int quizId, int userId){
         var question = await _context.Questions.Where(q => q.QuizId == quizId).ToListAsync();
         return question[0];
     }
     
-    [AllowAnonymous]
     [HttpGet("getOther/{questionId}")]
     public async Task<ActionResult<IEnumerable<QuestionDTO>>> GetByQuestion(int questionid){
         // Récupérer le quizId de la question actuelle
@@ -108,7 +104,6 @@ public class QuestionController : ControllerBase
             return questionsDTO;
     }
 
-    [AllowAnonymous]
     [HttpGet("byId/{id}")]
     public async Task<ActionResult<QuestionDTO>> GetOne(int id){
        var question = await _context.Questions
@@ -125,9 +120,6 @@ public class QuestionController : ControllerBase
         return questionDTO;
     }
 
-
-
-    [AllowAnonymous]
     [Authorized(Role.Teacher)]
     [HttpPost]
     public async Task<IActionResult> PostQuestion(QuestionDTO question){
@@ -139,7 +131,6 @@ public class QuestionController : ControllerBase
     }
 
 
-    [AllowAnonymous]
     [Authorized(Role.Teacher, Role.Student, Role.Admin)]
     [HttpGet("getQuestionss/{quizId}")]
     public async Task<ActionResult<List<int>>> GetQuestionss(int quizId){
@@ -153,7 +144,6 @@ public class QuestionController : ControllerBase
     }
 
 
-    [AllowAnonymous]
     [Authorized(Role.Teacher, Role.Student, Role.Admin)]
     [HttpGet("getdata/{dbname}")]
     public async Task<ActionResult<Dictionary<string, List<string>>>> getdata(string dbname){
@@ -178,7 +168,6 @@ public class QuestionController : ControllerBase
         return Ok(tableNames); 
     }
 
-    [AllowAnonymous]
     [Authorized(Role.Teacher, Role.Student, Role.Admin)]
     [HttpGet("GetAllColumnNames/{dbName}")]
     public async Task<ActionResult<Dictionary<string, List<string>>>> GetAllColumnNames(string dbName)
@@ -208,7 +197,6 @@ public class QuestionController : ControllerBase
     }
 
 // faire ça dans le model question avec les fonctions du front
-    [AllowAnonymous]
     [Authorized(Role.Teacher, Role.Student, Role.Admin)]
     [HttpPost("querySent")]
     public async Task<ActionResult<object>> Sql(SqlDTO sqldto)
@@ -265,7 +253,6 @@ public class QuestionController : ControllerBase
         return userQuery;
     }
 
-    [AllowAnonymous]
     [Authorized(Role.Teacher, Role.Student, Role.Admin)]
     [HttpGet("endAttempt/{attemptId}")]
     public async Task<ActionResult<object>> EndAttempt(int attemptId)
@@ -278,9 +265,11 @@ public class QuestionController : ControllerBase
         return _mapper.Map<AttemptDTO>(attempt);
     }
 
-
-//faire le put pour la modif
-
-//faire le delete
-
+    [Authorized(Role.Teacher, Role.Admin)]
+    [HttpGet("CheckName/{body}")]
+    public async  Task<bool> checkName(string body){
+        var question = _context.Questions.Where(q=> q.Body == body);
+        if(question!= null) return true;
+        return false;
+    }
 }

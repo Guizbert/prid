@@ -124,6 +124,7 @@ public class UsersController : ControllerBase
     [HttpPost]
     public async Task<ActionResult<UserDTO>> PostUser(UserWithPasswordDTO user) {
         var newUser = _mapper.Map<User>(user);                                      //fait un mapping vers une instance de user
+        newUser.Role = Role.Student;
         var result = await new UserValidator(_context).ValidateOnCreate(newUser);   // nouveau validator et faire une validation async
         if (!result.IsValid)
             return BadRequest(result);

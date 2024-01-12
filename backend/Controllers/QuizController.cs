@@ -28,9 +28,8 @@ public class QuizController : ControllerBase
         _mapper =mapper; 
     }
 
-    private async Task<User?> GetLoggedMember() => await _context.Users.FindAsync(User!.Identity!.Name);
+    private async Task<User?> GetLoggedMember() => await _context.Users.Where(u => u.Pseudo == User!.Identity!.Name).SingleOrDefaultAsync(); 
 
-    [AllowAnonymous]
     [Authorized(Role.Teacher, Role.Admin)]
     [HttpGet("all/{userId}")]
     public async Task<ActionResult<IEnumerable<QuizDTO>>> GetAll(int userId){
@@ -55,7 +54,8 @@ public class QuizController : ControllerBase
                 Console.WriteLine(quiz.IsTest + " <---- ---->" + quiz.Id);
                 if(!quiz.IsTest){
                     if(quiz.IsPublished){
-                        quiz.Statut = Statut.PUBLIE;                            Console.WriteLine("publie 1 ");
+                        quiz.Statut = Statut.PUBLIE;
+                        Console.WriteLine("publie 1 ");
 
                     }
                 }else if(quiz.IsTest){ 
@@ -91,13 +91,10 @@ public class QuizController : ControllerBase
         return _mapper.Map<QuizDTO>(quiz);
     }
 
-    [AllowAnonymous]
     [HttpPut("updateQuiz")]
     public async Task<IActionResult> UpdateQuiz(QuizUpdateDTO editQuiz){
         var quiz = await _context.Quizzes.FindAsync(editQuiz.Id);
-        if(!quiz.IsTest && (quiz.Start != null || quiz.Finish != null)){
-            quiz.Start = null; quiz.Finish = null;
-        }
+       
         if (quiz == null)
             return NotFound();
             
@@ -130,11 +127,13 @@ public class QuizController : ControllerBase
         }
         _mapper.Map<QuizUpdateDTO, Quiz>(editQuiz, quiz);
         
-        //var result = await new QuizValidator(_context).ValidateAsync(quiz);
+        //var result = await new QuizValidator(_context).ValidateAsync(quiz); 
 
         // if(!result.IsValid)
         //     return BadRequest(result);
-        
+        if(!quiz.IsTest){
+            quiz.Start = null; quiz.Finish = null;
+        }
         await _context.SaveChangesAsync();
 
         return NoContent();
@@ -165,7 +164,6 @@ public class QuizController : ControllerBase
 
 
 
-    [AllowAnonymous]
     [Authorized(Role.Teacher)]
     [HttpPost("postQuiz")]
     public async Task<ActionResult<QuizDTO>> PostQuiz(QuizSaveDTO savequiz)
@@ -213,6 +211,7 @@ public class QuizController : ControllerBase
     {
         if(!savequiz.IsTest && (savequiz.Start != null || savequiz.Finish != null)){
             savequiz.Start = null; savequiz.Finish = null;
+            Console.WriteLine(" JE REEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE");
         }
         var newQuiz = _mapper.Map<Quiz>(savequiz);
         var result = await new QuizValidator(_context).ValidateOnCreate(newQuiz);
@@ -281,7 +280,6 @@ public class QuizController : ControllerBase
 
 
 
-    [AllowAnonymous]
     [Authorized(Role.Teacher, Role.Student, Role.Admin)]
     [HttpGet("test/{userId}")]
     public async Task<ActionResult<IEnumerable<QuizDTO>>> GetTest(int userId){
@@ -299,7 +297,6 @@ public class QuizController : ControllerBase
     }
 
     
-    [AllowAnonymous]
     [Authorized(Role.Teacher, Role.Student, Role.Admin)]
     [HttpGet("quizzes/{userId}")]
     public async Task<ActionResult<IEnumerable<QuizDTO>>> GetQuiz(int userId)
@@ -318,14 +315,21 @@ public class QuizController : ControllerBase
     }
 
 
-    [AllowAnonymous]
     private async Task UpdateQuizStatusForCurrentUser(List<Quiz> quizzes, int userId)
     {
+        var ususus = await GetLoggedMember();
+        Console.WriteLine("========================= LOGGED USER =====================================");
+        Console.WriteLine(ususus.Pseudo + " <---");
         DateTimeOffset today = DateTimeOffset.Now;
         var user =await _context.Users.FindAsync(userId);
         
         foreach (var quiz in quizzes)
         {
+            if(quiz.Start > today){
+                quiz.CanInteract = false;
+            }else{
+                quiz.CanInteract = true;
+            }
             if(quiz.Finish < today){
                 quiz.Statut = Statut.CLOTURE;
                 quiz.IsClosed = true;
@@ -348,15 +352,15 @@ public class QuizController : ControllerBase
                                                         .CountAsync();
                             var correctAnswersCount = await _context.Answers
                                                         .Where(a => a.AttemptId == attempt.Id && a.IsCorrect)
-                                                        .Select(a => a.IsCorrect)
-                                                        .Distinct()
+                                                        .GroupBy(a => a.QuestionId)
+                                                        .Select(a => a.OrderByDescending(a => a.TimeStamp).First())
                                                         .CountAsync();
+                            Console.WriteLine(totalQuestions+ " -- " + correctAnswersCount);
                             quiz.Note = ((correctAnswersCount * 10)/ totalQuestions) ;
                         }
                     }
                     else
                         quiz.Statut = Statut.EN_COURS;
-                
 
                     // Update quiz status based on attempt
                     //quiz.Status = attempt.Status;
@@ -370,7 +374,6 @@ public class QuizController : ControllerBase
         }
     }
 
-    [AllowAnonymous]
     [Authorized(Role.Teacher, Role.Student, Role.Admin)]
     [HttpGet("getQuestions")]
     public async Task<ActionResult<IEnumerable<QuestionDTO>>> GetQuestions(int quizId){
@@ -380,7 +383,6 @@ public class QuizController : ControllerBase
             .ToListAsync());
     }
 
-    [AllowAnonymous]
     [Authorized(Role.Teacher, Role.Student, Role.Admin)]
     [HttpGet("isTestByid/{id}")]
     public async Task<ActionResult<bool>> IsTest(int id)
@@ -393,7 +395,6 @@ public class QuizController : ControllerBase
         return Ok(isTest);
     }
 
-    [AllowAnonymous]
     [Authorized(Role.Teacher, Role.Student, Role.Admin)]
     [HttpGet("haveAttempt/{quizId}/{userId}")]
     public async Task<ActionResult<bool>> HaveAttempt(int quizId,int userId)
@@ -406,7 +407,6 @@ public class QuizController : ControllerBase
         return Ok(hasAttempt);
     }
 
-    [AllowAnonymous]
     [Authorized(Role.Teacher, Role.Student, Role.Admin)]
     [HttpGet("anyAttempt/{quizId}")]
     public async Task<ActionResult<bool>> AnyAttempt(int quizId)
@@ -418,7 +418,14 @@ public class QuizController : ControllerBase
         return Ok(hasAttempt);
     }
 
-    [AllowAnonymous]
+    [Authorized(Role.Teacher, Role.Student, Role.Admin)]
+    [HttpGet("NameAvailable/{name}/{quizId}")]
+    public async Task<bool> NameAvailable(string name, int quizId)
+    {
+        return !await _context.Quizzes.AnyAsync(q => q.Id != quizId && q.Name == name);
+    }
+
+
     [Authorized(Role.Teacher, Role.Student, Role.Admin)]
     [HttpGet("getAttempt/{quizId}/{userId}/{questionId}")]
     public async Task<ActionResult<AttemptDTO>> GetAttempt(int quizId, int userId, int questionId)
@@ -440,7 +447,6 @@ public class QuizController : ControllerBase
     }
 
 
-    [AllowAnonymous]
     [Authorized(Role.Teacher, Role.Student, Role.Admin)]
     [HttpPost("newAttempt/{quizId}/{userId}")]
     public async Task<ActionResult<AttemptDTO>> newAttempt(int quizId, int userId)
@@ -466,7 +472,6 @@ public class QuizController : ControllerBase
 
 
 
-    [AllowAnonymous]
     [Authorized(Role.Teacher, Role.Student, Role.Admin)]
     [HttpGet("getAllDatabase")]
     public async Task<ActionResult<IEnumerable<Database>>> GetAllDatabase(){
@@ -474,7 +479,6 @@ public class QuizController : ControllerBase
     }
 
 
-    [AllowAnonymous]
     [Authorized(Role.Teacher, Role.Admin)]
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteQuiz(int id)
