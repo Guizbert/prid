@@ -90,9 +90,5 @@ export class QuizService{
     nameAvailable(name:string, quizId:number){
         return this.http.get<any>(`${this.baseUrl}api/quiz/NameAvailable/${name}/${quizId}`);
     }
-    // getDbById(dbId:number)()
-    // {
-
-    // }
       
 }

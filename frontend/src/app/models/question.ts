@@ -7,7 +7,6 @@ import { Database } from "./database";
 
 export class Question{
     id?: number;
-    //quiz?: Quiz;
     order?: number;
     body?: string;
     quizId?: number;

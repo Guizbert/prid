@@ -18,8 +18,4 @@ export class Attempt{
     get display(): string {
         return `${this.id}`;
     }
-
-    // get evaluation(): number{
-        
-    // }
 }

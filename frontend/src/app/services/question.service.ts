@@ -25,27 +25,23 @@ export class QuestionService{
     getFirstQuestion(id: number, userId:number) {
         return this.http.get<Question>(`${this.baseUrl}api/question/getFirstQuestion/${id}/${userId}`).pipe(
             map(res => plainToInstance(Question, res)),
-            //catchError(err => of(null))
         );
     }
     getFirstQuestionReadOnly(id: number, userId:number) {
         return this.http.get<Question>(`${this.baseUrl}api/question/getFirstQuestionReadOnly/${id}/${userId}`).pipe(
             map(res => plainToInstance(Question, res)),
-            //catchError(err => of(null))
         );
     }
 
     getById(id: number) {
         return this.http.get<Question>(`${this.baseUrl}api/question/byId/${id}`).pipe(
             map(res => plainToInstance(Question, res)),
-            //catchError(err => of(null))
         );
     }
 
     getOtherQuestionByQuestion(id:number){
         return this.http.get<Question[]>(`${this.baseUrl}api/question/getOther/${id}`).pipe(
             map(res => plainToInstance(Question, res)),
-            //catchError(err => of(null))
         );
     }
 

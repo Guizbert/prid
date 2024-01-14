@@ -19,8 +19,4 @@ export class Answer{
     get display(): string {
         return `${this.sql} ${this.timeStamp}`;
     }
-
-    // get evaluation(): number{
-        
-    // }
 }
