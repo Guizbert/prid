@@ -29,7 +29,7 @@ export class SignUpComponent{
         this.ctlFirstname = this.fb.control('', [Validators.minLength(3)]);
         this.ctlLastName = this.fb.control('', [Validators.minLength(3)]);
         this.ctlPasswordConfirm = this.fb.control('', [Validators.required, Validators.minLength(3)]);
-        this.ctlBirthdate = this.fb.control('', )
+        this.ctlBirthdate = this.fb.control('', [Validators.required]);
         this.signupForm = this.fb.group({
             pseudo: this.ctlPseudo,
             email: this.ctlEmail,
@@ -58,6 +58,14 @@ export class SignUpComponent{
 
     crossValidations(group: FormGroup): ValidationErrors | null {
         if(!group.value) {return null;}
+        const birthdate = new Date(group.value);
+        const today = new Date();
+        const age = today.getFullYear() - birthdate.getFullYear();
+    
+        if (today.getMonth() < birthdate.getMonth() || (today.getMonth() === birthdate.getMonth() && today.getDate() < birthdate.getDate())) {
+            // Adjust age if birthday hasn't occurred yet this year
+            return age - 1 < 18 ? { under18: true } : null;
+        }
         return group.value.password === group.value.passwordConfirm ? null : {passwordNotConfirmed: true};
     }
 

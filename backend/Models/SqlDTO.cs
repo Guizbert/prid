@@ -29,7 +29,6 @@ public class SqlDTO{
 
         using MySqlConnection connection = new MySqlConnection(connectionString);
         DataTable table = new DataTable();
-
         try
         {
             connection.Open();

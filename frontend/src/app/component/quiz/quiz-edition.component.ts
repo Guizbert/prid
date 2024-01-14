@@ -129,26 +129,25 @@ export class QuizEditionComponent implements OnInit{
                 this.quizService.anyAttempt(this.quiz?.id!).subscribe(
                     res => {
                         this.haveAttempt = res;
-                        console.log(res);
                     }
                 )
                 this.checkQuizName(); 
             });
             this.isExistingQuiz = true;
         }else {
+            this.ctlTypeQuiz.setValue("Training");
             this.isExistingQuiz = false;
         }
         // pour check si y a un attempt etc
     }
     saveQuiz() {
         let id = this.activatedRoute.snapshot.params['id'];
-        console.log(this.quizEditionForm);
-        console.log(this.ctlDb.value);
-        console.log(this.questions);
-        console.log(this.quizEditionForm.value.startDate + " <-------- start");
-        console.log(this.quizEditionForm.value.finishDate + "   < ----- finish");
-        if(id > 0){ // if edit
-            console.log("update Quiz <-<-<-<-<-<-");
+    
+        // Get adjusted dates
+        const adjustedStartDate = this.getTimeZone(this.quizEditionForm.value.startDate, true);
+        const adjustedFinishDate = this.getTimeZone(this.quizEditionForm.value.finishDate, false);
+    
+        if (id > 0) { // if edit
             const editquiz: QuizEdit = {
                 Id: id,
                 DatabaseId: this.quizEditionForm.value.db.id,
@@ -156,31 +155,26 @@ export class QuizEditionComponent implements OnInit{
                 Description: this.quizEditionForm.value.description,
                 IsPublished: this.quizEditionForm.value.isPublished,
                 IsTest: this.isTest,
-                Start: this.quizEditionForm.value.startDate ? this.quizEditionForm.value.startDate.toISOString() : null,
-                Finish: this.quizEditionForm.value.finishDate ? this.quizEditionForm.value.finishDate.toISOString() : null,
+                Start: adjustedStartDate,
+                Finish: adjustedFinishDate,
                 Questions: this.questions || [] // Ensure it's not null or undefined
             };
-            console.log("Save Quiz Payload:", editquiz);
             this.quizService.updateQuiz(editquiz).subscribe(res => {
-                console.log(res);
                 this.router.navigate(['/quiz']);
             });
-        }else{ // if new quiz
+        } else { // if new quiz
             const savequiz: QuizSave = {
                 DatabaseId: this.quizEditionForm.value.db.id,
                 Name: this.quizEditionForm.value.name,
                 Description: this.quizEditionForm.value.description,
                 IsPublished: this.quizEditionForm.value.isPublished,
                 IsTest: this.isTest,
-                Start: this.quizEditionForm.value.startDate ? this.quizEditionForm.value.startDate : null,
-                Finish: this.quizEditionForm.value.finishDate ? this.quizEditionForm.value.finishDate : null,
+                Start: adjustedStartDate,
+                Finish: adjustedFinishDate,
                 Questions: this.questions || [] // Ensure it's not null or undefined
             };
-            console.log("NEW QUIZ >-<-<-<-<-<->");
-            console.log("Save Quiz Payload:", savequiz);
             this.quizService.postQuiz(savequiz).subscribe(
                 res => {
-                    console.log("Post Quiz Response:", res);
                     this.router.navigate(['/quiz']);
                 },
                 error => {
@@ -189,6 +183,31 @@ export class QuizEditionComponent implements OnInit{
             );
         }
     }
+    getTimeZone(date1: Date | string, isStart: boolean): Date | undefined { // idée vient de Kenji
+        console.log(date1);
+        if (!date1) return undefined;
+        
+        let time1 = new Date(date1);
+        let originalTime = new Date(date1); // Create a copy of the original date
+        if(isStart){
+            originalTime.setHours(0,0,0,111);
+            time1.setMinutes(time1.getMinutes() - time1.getTimezoneOffset());
+            time1.setHours(0,0,0,111);
+        }else{
+            originalTime.setHours(23,59,59,999);
+            time1.setMinutes(time1.getMinutes() - time1.getTimezoneOffset());
+            time1.setHours(23, 59, 59, 999);
+        }
+        // Check if the resulting time is different from the original time
+        if (time1 == originalTime) {
+            console.log(time1 + " <--- avant return ");
+            return time1;
+        } else {
+            console.log(originalTime + " <--- avant return (unchanged)");
+            return originalTime;
+        }
+    }
+    
     delete(){
         let id =this.activatedRoute.snapshot.params['id'];
         console.log("delete");
@@ -202,7 +221,6 @@ export class QuizEditionComponent implements OnInit{
             if (result) {
                 this.quizService.deleteQuiz(id).subscribe(res => {
                     this.router.navigate(['/quiz']);
-                    console.log("delete");
                 });
             }
             });
@@ -343,8 +361,22 @@ export class QuizEditionComponent implements OnInit{
             console.log("There is an attempt");
             return false;
         }
-        if (this.questions?.some(q => q.body!.length < 3 || q.solutions?.some(solution => solution.sql!.length < 3))) {
-            console.log("Some questions or solutions have less than 3 characters");
+        if (this.questions?.some(q => q.body!.length < 3)) {
+            console.log("Some questions have less than 3 characters");
+            return false;
+        }
+        if (this.questions?.some(q => {
+            if (!q.solutions) {
+                console.log("Solutions array is null for a question");
+                return true;  // Set to true to indicate the failure
+            }
+            if (q.solutions.some(solution => solution?.sql!.length < 3)) {
+                console.log("Some solutions have less than 3 characters");
+                return true;  // Set to true to indicate the failure
+            }
+            return false;  // No issues found for this question
+            })) {
+            // If condition fails, return false
             return false;
         }
     

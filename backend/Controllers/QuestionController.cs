@@ -20,7 +20,7 @@ namespace prid_2324_a12.Controllers;
 public class QuestionController : ControllerBase
 {
     //faire function getQuiz (non test) et getTest
-    private async Task<User?> GetLoggedMember() => await _context.Users.FindAsync(User!.Identity!.Name);
+    private async Task<User?> GetLoggedMember() => await _context.Users.Where(u => u.Pseudo == User!.Identity!.Name).SingleOrDefaultAsync(); 
 
     private readonly MsnContext _context;
     private readonly IMapper _mapper;
@@ -37,6 +37,12 @@ public class QuestionController : ControllerBase
 
     [HttpGet("getFirstQuestion/{quizId}/{userId}")]
     public async Task<Question?> GetFirstQuestion(int quizId, int userId){
+        var connectedUser = await GetLoggedMember();
+
+        if (connectedUser != null && connectedUser.Id != userId)
+        {
+            throw new UnauthorizedAccessException("Access Denied");
+        }
         var attempt = await _context.Attempts.Where(a => a.QuizId == quizId && a.UserId == userId).OrderByDescending(a => a.Finish).FirstOrDefaultAsync();
         if(attempt != null ){
             if(attempt.Finish != null){
@@ -123,6 +129,12 @@ public class QuestionController : ControllerBase
     [Authorized(Role.Teacher)]
     [HttpPost]
     public async Task<IActionResult> PostQuestion(QuestionDTO question){
+        var connectedUser = await GetLoggedMember();
+
+        if (connectedUser != null && connectedUser.Role != Role.Teacher)
+        {
+            throw new UnauthorizedAccessException("Access Denied");
+        }
         // Mapper le QuestionDTO vers Question
         var newQuestion = _mapper.Map<Question>(question);
         _context.Questions.Add(newQuestion);
@@ -257,7 +269,15 @@ public class QuestionController : ControllerBase
     [HttpGet("endAttempt/{attemptId}")]
     public async Task<ActionResult<object>> EndAttempt(int attemptId)
     {
+        var connectedUser = await GetLoggedMember();
+
+        
         var attempt = await _context.Attempts.Where(a => a.Id == attemptId).FirstOrDefaultAsync();
+
+        if (connectedUser != null && attempt.UserId != connectedUser.Id)
+        {
+            throw new UnauthorizedAccessException("Access Denied");
+        }
         attempt.Finish = DateTimeOffset.Now;
 
         await _context.SaveChangesAsync();
@@ -268,6 +288,12 @@ public class QuestionController : ControllerBase
     [Authorized(Role.Teacher, Role.Admin)]
     [HttpGet("CheckName/{body}")]
     public async  Task<bool> checkName(string body){
+        var connectedUser = await GetLoggedMember();
+
+        if (connectedUser != null && connectedUser.Role != Role.Teacher)
+        {
+            throw new UnauthorizedAccessException("Access Denied");
+        }
         var question = _context.Questions.Where(q=> q.Body == body);
         if(question!= null) return true;
         return false;

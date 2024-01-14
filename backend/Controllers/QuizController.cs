@@ -32,12 +32,21 @@ public class QuizController : ControllerBase
 
     [Authorized(Role.Teacher, Role.Admin)]
     [HttpGet("all/{userId}")]
-    public async Task<ActionResult<IEnumerable<QuizDTO>>> GetAll(int userId){
-        var quizzes =await _context.Quizzes
+    public async Task<ActionResult<IEnumerable<QuizDTO>>> GetAll(int userId)
+    {
+        var connectedUser = await GetLoggedMember();
+
+        if (connectedUser.Id != userId || connectedUser.Role != Role.Teacher)
+        {
+            return BadRequest("Access Denied");
+        }
+
+        var quizzes = await _context.Quizzes
             .Include(q => q.Database)
             .OrderBy(q => q.Name)
             .ToListAsync();
-        await UpdateQuizStatusForTeacher(quizzes,userId);
+
+        await UpdateQuizStatusForTeacher(quizzes, userId);
 
         return _mapper.Map<List<QuizDTO>>(quizzes);
         // return _mapper.Map<List<QuizDTO>>(await _context.Quizzes.ToListAsync());
@@ -46,41 +55,61 @@ public class QuizController : ControllerBase
     [Authorized(Role.Teacher, Role.Admin)]
     private async Task UpdateQuizStatusForTeacher(List<Quiz> quizzes, int userId)
     {
+        var connectedUser = await GetLoggedMember();
+
+        if (connectedUser.Id != userId || connectedUser.Role != Role.Teacher)
+        {
+            throw new UnauthorizedAccessException("Access Denied");
+        }
+
         DateTimeOffset today = DateTimeOffset.Now;
-        var user =await _context.Users.FindAsync(userId);
+        Console.WriteLine(today);
+
+        var user = await _context.Users.FindAsync(userId);
+
         foreach (var quiz in quizzes)
         {
-            if(user.isTeacher()){
+            if (user.isTeacher())
+            {
                 Console.WriteLine(quiz.IsTest + " <---- ---->" + quiz.Id);
-                if(!quiz.IsTest){
-                    if(quiz.IsPublished){
-                        quiz.Statut = Statut.PUBLIE;
-                        Console.WriteLine("publie 1 ");
-
-                    }
-                }else if(quiz.IsTest){ 
-                    if(quiz.IsPublished)
+                if (!quiz.IsTest)
+                {
+                    if (quiz.IsPublished)
                     {
+                        quiz.Statut = Statut.PUBLIE;
+                    }
+                }
+                else if (quiz.IsTest)
+                {
+                    if (quiz.IsPublished)
+                    {
+                        Console.WriteLine(quiz.Finish + " <--    name --->" + quiz.Name);
                         if (quiz.Finish < today)
                         {
                             quiz.Statut = Statut.CLOTURE;
-                        }else {
+                        }
+                        else
+                        {
                             quiz.Statut = Statut.PUBLIE;
-                            Console.WriteLine("publie 2 ");
                         }
                     }
-                       
                 }
-                if(!quiz.IsPublished)
+                if (!quiz.IsPublished)
                     quiz.Statut = Statut.PAS_PUBLIE;
-                 
             }
         }
     }
 
+
     [Authorized(Role.Teacher, Role.Admin)]
     [HttpGet("{id}")]
     public async Task<ActionResult<QuizDTO>> GetOne(int id){
+        var connectedUser = await GetLoggedMember();
+
+        if (connectedUser != null && connectedUser.Role != Role.Teacher)
+        {
+            return BadRequest("Access Denied");
+        }
         var quiz = await _context.Quizzes
         .Include(q => q.Database)
         .Include(q => q.Questions)
@@ -93,6 +122,12 @@ public class QuizController : ControllerBase
 
     [HttpPut("updateQuiz")]
     public async Task<IActionResult> UpdateQuiz(QuizUpdateDTO editQuiz){
+        var connectedUser = await GetLoggedMember();
+
+        if (connectedUser != null && connectedUser.Role != Role.Teacher)
+        {
+            return BadRequest("Access Denied");
+        }
         var quiz = await _context.Quizzes.FindAsync(editQuiz.Id);
        
         if (quiz == null)
@@ -141,6 +176,12 @@ public class QuizController : ControllerBase
 
     private async Task<bool> DeleteQuestion(List<Question> questions)
     {
+        var connectedUser = await GetLoggedMember();
+
+        if (connectedUser != null && connectedUser.Role != Role.Teacher)
+        {
+            throw new UnauthorizedAccessException("Access Denied");
+        }
         try
         {
             foreach (var question in questions)
@@ -168,52 +209,65 @@ public class QuizController : ControllerBase
     [HttpPost("postQuiz")]
     public async Task<ActionResult<QuizDTO>> PostQuiz(QuizSaveDTO savequiz)
     {
-        if(savequiz.Start == null || savequiz.Finish == null){
-            return BadRequest("Failed to save the quiz (date are null ).");
+        var connectedUser = await GetLoggedMember();
 
-        }
-        var newQuiz = await SaveQuiz(savequiz);
-
-        if (newQuiz == null)
+        if (connectedUser != null && connectedUser.Role != Role.Teacher)
         {
-            // Handle error or return appropriate response
-            return BadRequest("Failed to save the quiz.");
-        }
+            throw new UnauthorizedAccessException("Access Denied");
+        }else{
+            if(savequiz.IsTest && (savequiz.Start == null || savequiz.Finish == null)){
+                return BadRequest("Failed to save the quiz (date are null ).");
+            }
+            var newQuiz = await SaveQuiz(savequiz);
 
-        foreach (var questionDTO in savequiz.Questions) 
-        {
-            var existingQuestion = await GetExistingQuestion(questionDTO, newQuiz.Id);
-
-            if (existingQuestion == null)
+            if (newQuiz == null)
             {
-                existingQuestion = await SaveQuestion(questionDTO, newQuiz.Id);
+                // Handle error or return appropriate response
+                return BadRequest("Failed to save the quiz.");
+            }
+
+            foreach (var questionDTO in savequiz.Questions) 
+            {
+                var existingQuestion = await GetExistingQuestion(questionDTO, newQuiz.Id);
 
                 if (existingQuestion == null)
                 {
-                    // Handle error or return appropriate response
-                    return BadRequest("Failed to save a question.");
-                }
-            }
+                    existingQuestion = await SaveQuestion(questionDTO, newQuiz.Id);
 
-            foreach (var solutionDTO in questionDTO.Solutions)
-            {
-                if (!await SaveSolution(solutionDTO, existingQuestion.Id))
+                    if (existingQuestion == null)
+                    {
+                        // Handle error or return appropriate response
+                        return BadRequest("Failed to save a question.");
+                    }
+                }
+
+                foreach (var solutionDTO in questionDTO.Solutions)
                 {
-                    // Handle error or return appropriate response
-                    return BadRequest("Failed to save a solution.");
+                    if (!await SaveSolution(solutionDTO, existingQuestion.Id))
+                    {
+                        // Handle error or return appropriate response
+                        return BadRequest("Failed to save a solution.");
+                    }
                 }
             }
+            return CreatedAtAction(nameof(GetOne), new { id = newQuiz.Id }, _mapper.Map<QuizDTO>(newQuiz));
         }
-        return CreatedAtAction(nameof(GetOne), new { id = newQuiz.Id }, _mapper.Map<QuizDTO>(newQuiz));
+        
     }
 
     private async Task<Quiz> SaveQuiz([FromBody]QuizSaveDTO savequiz)
     {
+        var connectedUser = await GetLoggedMember();
+
+        if (connectedUser != null && connectedUser.Role != Role.Teacher)
+        {
+            throw new UnauthorizedAccessException("Access Denied");
+        }
         if(!savequiz.IsTest && (savequiz.Start != null || savequiz.Finish != null)){
             savequiz.Start = null; savequiz.Finish = null;
-            Console.WriteLine(" JE REEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE");
         }
         var newQuiz = _mapper.Map<Quiz>(savequiz);
+
         var result = await new QuizValidator(_context).ValidateOnCreate(newQuiz);
         if (!result.IsValid)
         {
@@ -238,6 +292,12 @@ public class QuizController : ControllerBase
 
     private async Task<Question> SaveQuestion(QuestionSaveDTO questionDTO, int quizId)
     {
+        var connectedUser = await GetLoggedMember();
+
+        if (connectedUser != null && connectedUser.Role != Role.Teacher)
+        {
+            throw new UnauthorizedAccessException("Access Denied");
+        }
         var questiondto = new QuestionSaveDTO
         {
             Order = questionDTO.Order,
@@ -255,6 +315,12 @@ public class QuizController : ControllerBase
 
     private async Task<bool> SaveSolution(SolutionDTO solutionDTO, int questionId)
     {
+        var connectedUser = await GetLoggedMember();
+
+        if (connectedUser != null && connectedUser.Role != Role.Teacher)
+        {
+            throw new UnauthorizedAccessException("Access Denied");
+        }
         // Check if the solution already exists
         var existingSolution = await _context.Solutions
             .FirstOrDefaultAsync(s =>
@@ -283,6 +349,10 @@ public class QuizController : ControllerBase
     [Authorized(Role.Teacher, Role.Student, Role.Admin)]
     [HttpGet("test/{userId}")]
     public async Task<ActionResult<IEnumerable<QuizDTO>>> GetTest(int userId){
+        var connectedUser = await GetLoggedMember();
+        if(connectedUser.Id != userId){
+            return BadRequest("Access Denied");
+        }
         var test =  await _context.Quizzes
             .Where(q => q.IsTest == true  && q.IsPublished)
             .Include(q => q.Database)
@@ -302,6 +372,10 @@ public class QuizController : ControllerBase
     public async Task<ActionResult<IEnumerable<QuizDTO>>> GetQuiz(int userId)
     {
 
+        var connectedUser = await GetLoggedMember();
+        if(connectedUser.Id != userId){
+            return BadRequest("Access Denied");
+        }
         var quizzes = await _context.Quizzes
             .Where(q => q.IsTest == false  && q.IsPublished)
             .Include(q => q.Database)
@@ -317,11 +391,16 @@ public class QuizController : ControllerBase
 
     private async Task UpdateQuizStatusForCurrentUser(List<Quiz> quizzes, int userId)
     {
-        var ususus = await GetLoggedMember();
-        Console.WriteLine("========================= LOGGED USER =====================================");
-        Console.WriteLine(ususus.Pseudo + " <---");
+        var connectedUser = await GetLoggedMember();
+
+        if (connectedUser != null && connectedUser.Id != userId)
+        {
+            throw new UnauthorizedAccessException("Access Denied");
+        }
         DateTimeOffset today = DateTimeOffset.Now;
         var user =await _context.Users.FindAsync(userId);
+
+        
         
         foreach (var quiz in quizzes)
         {
@@ -346,17 +425,7 @@ public class QuizController : ControllerBase
                     if(attempt.Finish != null ){
                         quiz.Statut = Statut.FINI;
                         if(quiz.IsTest ){
-                            quiz.Note = 0;
-                            var totalQuestions = await _context.Questions
-                                                        .Where(q => q.QuizId == quiz.Id)
-                                                        .CountAsync();
-                            var correctAnswersCount = await _context.Answers
-                                                        .Where(a => a.AttemptId == attempt.Id && a.IsCorrect)
-                                                        .GroupBy(a => a.QuestionId)
-                                                        .Select(a => a.OrderByDescending(a => a.TimeStamp).First())
-                                                        .CountAsync();
-                            Console.WriteLine(totalQuestions+ " -- " + correctAnswersCount);
-                            quiz.Note = ((correctAnswersCount * 10)/ totalQuestions) ;
+                            quiz.Note = await this.CalculateQuizNote(quiz,attempt);
                         }
                     }
                     else
@@ -373,6 +442,25 @@ public class QuizController : ControllerBase
             
         }
     }
+    private async Task<int> CalculateQuizNote(Quiz quiz, Attempt attempt)// idée vient de vlad
+    {
+        // Get the total number of questions in the quiz
+        var totalQuestions = await _context.Questions.CountAsync(q => q.QuizId == quiz.Id);
+
+        // Get the last answer for each question in the latest attempt
+        var lastAnswers = await _context.Answers
+            .Where(a => a.AttemptId == attempt.Id)
+            .GroupBy(a => a.QuestionId)
+            .Select(a => a.OrderByDescending(a => a.TimeStamp).First())
+            .ToListAsync();
+
+        // Count how many of these last answers are correct
+        var correctAnswersCount = lastAnswers.Count(a => a != null && a.IsCorrect);
+
+        // Calculate the score
+        return totalQuestions > 0 ? correctAnswersCount * 10 / totalQuestions : 0;
+    }
+
 
     [Authorized(Role.Teacher, Role.Student, Role.Admin)]
     [HttpGet("getQuestions")]
@@ -399,6 +487,12 @@ public class QuizController : ControllerBase
     [HttpGet("haveAttempt/{quizId}/{userId}")]
     public async Task<ActionResult<bool>> HaveAttempt(int quizId,int userId)
     {
+        var connectedUser = await GetLoggedMember();
+
+        if (connectedUser != null && connectedUser.Id != userId)
+        {
+            throw new UnauthorizedAccessException("Access Denied");
+        }
         bool hasAttempt = await _context.Quizzes
             .Where(q => q.Id == quizId)
             .Select(q => q.Attempts.Any(a => a.UserId == userId)) // Vérifie si l'utilisateur a déjà une tentative
@@ -407,10 +501,16 @@ public class QuizController : ControllerBase
         return Ok(hasAttempt);
     }
 
-    [Authorized(Role.Teacher, Role.Student, Role.Admin)]
+    [Authorized(Role.Teacher, Role.Admin)]
     [HttpGet("anyAttempt/{quizId}")]
     public async Task<ActionResult<bool>> AnyAttempt(int quizId)
     {
+        var connectedUser = await GetLoggedMember();
+
+        if (connectedUser != null && connectedUser.Role != Role.Teacher)
+        {
+            throw new UnauthorizedAccessException("Access Denied");
+        }
         bool hasAttempt = await _context.Quizzes
             .Where(q => q.Id == quizId && q.Attempts.Any()) 
             .AnyAsync();
@@ -418,10 +518,16 @@ public class QuizController : ControllerBase
         return Ok(hasAttempt);
     }
 
-    [Authorized(Role.Teacher, Role.Student, Role.Admin)]
+    [Authorized(Role.Teacher, Role.Admin)]
     [HttpGet("NameAvailable/{name}/{quizId}")]
     public async Task<bool> NameAvailable(string name, int quizId)
     {
+        var connectedUser = await GetLoggedMember();
+
+        if (connectedUser != null && connectedUser.Role != Role.Teacher)
+        {
+            throw new UnauthorizedAccessException("Access Denied");
+        }
         return !await _context.Quizzes.AnyAsync(q => q.Id != quizId && q.Name == name);
     }
 
@@ -430,6 +536,13 @@ public class QuizController : ControllerBase
     [HttpGet("getAttempt/{quizId}/{userId}/{questionId}")]
     public async Task<ActionResult<AttemptDTO>> GetAttempt(int quizId, int userId, int questionId)
     {
+
+        var connectedUser = await GetLoggedMember();
+
+        if (connectedUser != null && connectedUser.Id != userId)
+        {
+            throw new UnauthorizedAccessException("Access Denied");
+        }
         var attempt = await _context.Quizzes
             .Where(q => q.Id == quizId)
             .SelectMany(q => q.Attempts)
@@ -451,6 +564,12 @@ public class QuizController : ControllerBase
     [HttpPost("newAttempt/{quizId}/{userId}")]
     public async Task<ActionResult<AttemptDTO>> newAttempt(int quizId, int userId)
     {
+        var connectedUser = await GetLoggedMember();
+
+        if (connectedUser != null && connectedUser.Id != userId)
+        {
+            throw new UnauthorizedAccessException("Access Denied");
+        }
         var newAttempt = new Attempt
             {
                 Start = DateTimeOffset.Now,
@@ -483,6 +602,12 @@ public class QuizController : ControllerBase
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteQuiz(int id)
     {
+        var connectedUser = await GetLoggedMember();
+
+        if (connectedUser != null && connectedUser.Role != Role.Teacher)
+        {
+            throw new UnauthorizedAccessException("Access Denied");
+        }
         var quiz = await _context.Quizzes
             .Include(q => q.Questions)
                 .ThenInclude(qu => qu.Solutions)

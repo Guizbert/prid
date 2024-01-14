@@ -54,12 +54,10 @@ export class QuestionService{
     }
     
     querySent(questionId:number,query: string, dbname: string, newAnswer:boolean,attemptId:number): Observable<any> {
-        //console.log(options);
         return this.http.post<any>(`${this.baseUrl}api/question/querySent`, {questionId,query, dbName:dbname, newAnswer,attemptId});
     }
 
     endAttempt(attemptId: number): Observable<any> {
-        //console.log(options);
         return this.http.get<any>(`${this.baseUrl}api/question/endAttempt/${attemptId}`);
     }
 

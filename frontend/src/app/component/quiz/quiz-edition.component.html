@@ -69,14 +69,14 @@
                 <div class="col-sm-4">
                   <mat-form-field appearance="fill" >
                     <mat-label>Start</mat-label>
-                    <input matInput [matDatepicker]="pickerStart" [formControl]="ctlStartDate" [min]="today" [disabled]="haveAttempt">
+                    <input matInput [matDatepicker]="pickerStart" [formControl]="ctlStartDate" [disabled]="haveAttempt">
                     <mat-datepicker-toggle matSuffix [for]="pickerStart"></mat-datepicker-toggle>
                     <mat-datepicker #pickerStart></mat-datepicker>
                   </mat-form-field>
               
                   <mat-form-field appearance="fill">
                     <mat-label>Finish</mat-label>
-                    <input matInput [matDatepicker]="pickerFinish" [formControl]="ctlFinishDate" [min]="today" [disabled]="haveAttempt">
+                    <input matInput [matDatepicker]="pickerFinish" [formControl]="ctlFinishDate" [disabled]="haveAttempt">
                     <mat-datepicker-toggle matSuffix [for]="pickerFinish"></mat-datepicker-toggle>
                     <mat-datepicker #pickerFinish></mat-datepicker>
                   </mat-form-field>
@@ -136,7 +136,7 @@
                     </div>
                 </mat-expansion-panel>
             </mat-accordion>
-            <button (click)="newQuestion()" class="btn btn-primary" matTooltip="new Question"matTooltipPosition="below"><mat-icon>add_circle</mat-icon></button>
+            <button (click)="newQuestion()"  [disabled]="haveAttempt" class="btn btn-primary" matTooltip="new Question"matTooltipPosition="below"><mat-icon>add_circle</mat-icon></button>
         </div>
     </div>
 </form>

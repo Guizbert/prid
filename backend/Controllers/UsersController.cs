@@ -32,7 +32,7 @@ public class UsersController : ControllerBase
         _mapper = mapper;
         _tokenHelper = new TokenHelper(context);
     }
-    private async Task<User?> GetLoggedMember() => await _context.Users.FindAsync(User!.Identity!.Name);
+    private async Task<User?> GetLoggedMember() => await _context.Users.Where(u => u.Pseudo == User!.Identity!.Name).SingleOrDefaultAsync(); 
 
     //[Authorized(Role.Teacher)] 
     // que les teacher aurant droit a cette fonction (pourra servir pour récup les étudiants et leurs réponses)
@@ -72,7 +72,6 @@ public class UsersController : ControllerBase
         return _mapper.Map<List<UserDTO>>(await _context.Users.ToListAsync());
     }
 
-    [AllowAnonymous]
     [HttpGet("{id}")]
     public async Task<ActionResult<UserDTO>> GetOne(int id) {
         // Récupère en BD le membre dont le pseudo est passé en paramètre dans l'url
@@ -162,7 +161,7 @@ public class UsersController : ControllerBase
         return NoContent();
     }
 
-
+    [AllowAnonymous]
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteUser(int id) {
         var user = await _context.Users.FindAsync(id);

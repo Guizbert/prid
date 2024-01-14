@@ -7,6 +7,7 @@ namespace prid_2324_a12.Models
 {
     public class QuestionValidator : AbstractValidator<Question>
     {
+        
         public QuestionValidator()
         {
             RuleFor(q => q.Order)
@@ -22,8 +23,8 @@ namespace prid_2324_a12.Models
                 .NotEmpty()
                 .WithMessage("Chaque question doit avoir au moins une solution.");
 
-            // RuleForEach(q => q.Solutions)
-            //     .SetValidator(new SolutionValidator());
+             RuleForEach(q => q.Solutions)
+                 .SetValidator(new SolutionValidator());
         }
     }
 }

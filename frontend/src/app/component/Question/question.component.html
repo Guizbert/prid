@@ -18,7 +18,7 @@
     <button *ngIf="!isTest" (click)="voirSoluce()">Voir soluce</button>
 </div>
 <p>
-    {{timeStamptQuery | date:'dd/MM/yyyy H:mm:ss'}}
+    {{ timeStamptQuery ? (timeStamptQuery | date:'dd/MM/yyyy H:mm:ss') : '' }}
 </p>
 <div *ngIf="!isTest || isRead">
 

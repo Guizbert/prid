@@ -6,48 +6,51 @@
         <input matInput [formControl]="ctlPseudo" required appSetFocus>
         <mat-error class="field-error" *ngIf="ctlPseudo.hasError('required')">Required</mat-error>
         <mat-error class="field-error" *ngIf="ctlPseudo.hasError('minlength')">
-            Minimum length is {{ctlPseudo.errors?.minlength?.requiredLength}}
+            Minimum length is 3 characters
+        </mat-error>
+        <mat-error class="field-error" *ngIf="ctlPseudo.hasError('pseudoUsed')">
+            Pseudo already taken
         </mat-error>
     </mat-form-field>
-    <mat-form-field>
+<mat-form-field>
         <mat-label>Email</mat-label>
         <input type="email" matInput [formControl]="ctlEmail" required autocomplete="email">
         <mat-error class="field-error" *ngIf="ctlEmail.hasError('required')">Required</mat-error>
-        <mat-error class="field-error" *ngIf="ctlEmail.hasError('minlength')">
-            Minimum length is {{ctlEmail.errors?.minlength?.requiredLength}}
-        </mat-error>
     </mat-form-field> 
     <mat-form-field>
         <mat-label>FirstName</mat-label>
         <input type="text" matInput [formControl]="ctlFirstname" autocomplete="cc-name">
-        <mat-error class="field-error" *ngIf="ctlFirstname.hasError('')"></mat-error> 
     </mat-form-field>
     <mat-form-field>
         <mat-label>LastName</mat-label>
         <input type="text" matInput [formControl]="ctlLastName" autocomplete="cc-family-name">
-        <mat-error class="field-error" *ngIf="ctlLastName.hasError('')"></mat-error> 
     </mat-form-field>
     <mat-form-field>
         <mat-label>BirthDate</mat-label>
         <input type="date" matInput [formControl]="ctlBirthdate" required
             autocomplete="bday">
         <mat-error class="field-error" *ngIf="ctlLastName.hasError('')">Required</mat-error>
+        <mat-error class="field-error" *ngIf="ctlLastName.hasError('under18')">Have to be 18</mat-error>
+
     </mat-form-field>
     <mat-form-field>
         <mat-label>Password</mat-label>
         <input type="password" matInput [formControl]="ctlPassword" required
             autocomplete="new-password">
         <mat-error class="field-error" *ngIf="ctlPassword.hasError('required')">Required</mat-error>
-        <mat-error class="field-error" *ngIf="ctlPassword.hasError('minlength')">Minimum length is
-            {{ctlPassword.errors?.minlength?.requiredLength}}
+        <mat-error class="field-error" *ngIf="ctlPassword.hasError('minlength')">
+            Minimum length is 3 characters
         </mat-error>
     </mat-form-field>
     <mat-form-field>
         <mat-label>Confirm Password</mat-label>
         <input type="password" matInput [formControl]="ctlPasswordConfirm" required>
         <mat-error class="field-error" *ngIf="ctlPasswordConfirm.hasError('required')">Required</mat-error>
-        <mat-error class="field-error" *ngIf="ctlPasswordConfirm.hasError('minlength')">Minimum length is
-            {{ctlPasswordConfirm.errors?.minlength?.requiredLength}}
+        <mat-error class="field-error" *ngIf="ctlPasswordConfirm.hasError('minlength')">
+            Minimum length is 3 characters
+        </mat-error>
+        <mat-error class="field-error" *ngIf="ctlPseudo.hasError('passwordNotConfirmed')">
+            Incorrect password
         </mat-error>
     </mat-form-field>
     <div *ngIf="signupForm.errors && ctlPasswordConfirm.dirty && ctlPasswordConfirm.valid">

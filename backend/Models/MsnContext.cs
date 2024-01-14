@@ -309,20 +309,20 @@ public class MsnContext : DbContext
             new Attempt { Id = 1, Start = new DateTimeOffset(new DateTime(2023, 09, 01)), QuizId = 1, UserId = 4 }
         );
         modelBuilder.Entity<Answer>().HasData(
-            new Answer { Id = 1, QuestionId = 1, AttemptId = 1, Sql = "SELECT * FROM S", IsCorrect = true }
+            new Answer { Id = 1, QuestionId = 1, AttemptId = 1, Sql = "SELECT * FROM S", IsCorrect = true, TimeStamp= new DateTimeOffset(DateTime.Now)  }
         );
 
         modelBuilder.Entity<Attempt>().HasData(
             new Attempt { Id = 2, Start = DateTimeOffset.Now, Finish = DateTimeOffset.Now, QuizId = 4, UserId = 4 }
         );
         modelBuilder.Entity<Answer>().HasData(
-            new Answer { Id = 2, QuestionId = 30, AttemptId = 2, Sql = "SELECT * FROM S", IsCorrect = true }
+            new Answer { Id = 2, QuestionId = 30, AttemptId = 2, Sql = "SELECT * FROM S", IsCorrect = true, TimeStamp= new DateTimeOffset(DateTime.Now) }
         );
         modelBuilder.Entity<Answer>().HasData(
-            new Answer { Id = 3, QuestionId = 31, AttemptId = 2, Sql = "SELECT * FROM J", IsCorrect = false }
+            new Answer { Id = 3, QuestionId = 31, AttemptId = 2, Sql = "SELECT * FROM J", IsCorrect = false,TimeStamp= new DateTimeOffset(DateTime.Now)}
         );
     }
-
+    
     public DbSet<User> Users => Set<User>();
     public DbSet<Student> Students=> Set<Student>();
     public DbSet<Teacher> Teachers=> Set<Teacher>();
