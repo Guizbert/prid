@@ -8,12 +8,9 @@
             <mat-form-field >
                 <mat-label>Name</mat-label>
                 <input matInput [formControl]="ctlName" required appSetFocus (change)="checkQuizName()"  [readonly]="haveAttempt"> 
+                <mat-error class="field-error" *ngIf="ctlName.hasError('isNotUnique')">Name already taken</mat-error>
                 <mat-error class="field-error" *ngIf="ctlName.hasError('required')">Required</mat-error>
                 <mat-error class="field-error" *ngIf="quizEditionForm.hasError('badNameLength')">Must be 3 characters minimum</mat-error>
-                <mat-error class="field-error" *ngIf="isUnique == true">Name already taken</mat-error>
-
-
-            <!-- faire boolean pour readonly isNew -->
             </mat-form-field>
 
 

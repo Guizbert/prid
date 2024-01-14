@@ -43,7 +43,7 @@ public class QuestionController : ControllerBase
         {
             throw new UnauthorizedAccessException("Access Denied");
         }
-        var attempt = await _context.Attempts.Where(a => a.QuizId == quizId && a.UserId == userId).OrderByDescending(a => a.Finish).FirstOrDefaultAsync();
+        var attempt = await _context.Attempts.Where(a => a.QuizId == quizId && a.UserId == userId).OrderByDescending(a => a.Start).FirstOrDefaultAsync();
         if(attempt != null ){
             if(attempt.Finish != null){
                 var newAttempt = new Attempt
@@ -83,7 +83,7 @@ public class QuestionController : ControllerBase
                     QuizId = newAttempt.QuizId,
                 };
         }
-        var question = await _context.Questions.Where(q => q.QuizId == quizId).ToListAsync();
+        var question = await _context.Questions.Where(q => q.QuizId == quizId).OrderBy(q => q.Order).ToListAsync();
         return question[0];
     }
 

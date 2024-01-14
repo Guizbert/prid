@@ -141,7 +141,7 @@ export class QuestionComponent implements OnInit, AfterViewInit  {
     console.log("send             <-");
     //doit faire la création si elle n'existe pas; et la modification si elle existe déjà 
 
-    const cleanedQuery = this.query.replace(/[\r\n]/g, ' '); // enlève le \n pour éviter les erreurs
+    const cleanedQuery = this.query.replace(/[\r\n]/g, ' ').trim(); // enlève le \n pour éviter les erreurs
     if(cleanedQuery){
       this.questionService.querySent(this.question.id!, cleanedQuery, this.database.name!, newAnswer, this.attempt?.id!).subscribe(
         (data: any) => {

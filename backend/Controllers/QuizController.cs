@@ -112,7 +112,7 @@ public class QuizController : ControllerBase
         }
         var quiz = await _context.Quizzes
         .Include(q => q.Database)
-        .Include(q => q.Questions)
+        .Include(q => q.Questions.OrderBy(q => q.Order))
             .ThenInclude(qu => qu.Solutions.OrderBy(s => s.Order))
         .FirstOrDefaultAsync(q => q.Id == id);
         if (quiz == null)
@@ -134,6 +134,7 @@ public class QuizController : ControllerBase
             return NotFound();
             
         await this.DeleteQuestion(quiz.Questions.ToList());
+
 
        foreach (var questionDTO in editQuiz.Questions)
         {
@@ -415,10 +416,8 @@ public class QuizController : ControllerBase
             }
             else{
                 var attempt = await _context.Attempts
-                    .OrderByDescending(a => a.Finish)
+                    .OrderByDescending(a => a.Start)
                     .FirstOrDefaultAsync(a => a.QuizId == quiz.Id && a.UserId == userId);       // devrait le récup par la dernière date du finish et pas le premier
-
-
                 if (attempt != null)
                 {
                     quiz.HaveAttempt = true;
@@ -430,9 +429,6 @@ public class QuizController : ControllerBase
                     }
                     else
                         quiz.Statut = Statut.EN_COURS;
-
-                    // Update quiz status based on attempt
-                    //quiz.Status = attempt.Status;
                 }else
                     quiz.Statut = Statut.PAS_COMMENCE;
                 //Console.WriteLine("statut : " + quiz.Statut);

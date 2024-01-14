@@ -10,12 +10,13 @@ import { MatDialog } from '@angular/material/dialog';
 import { AuthenticationService } from 'src/app/services/authentication.service';
 import { TruncatePipe } from 'src/app/helpers/truncatePipe ';
 import { Question } from 'src/app/models/question';
-import { FormBuilder, FormControl, FormGroup, ValidationErrors, Validators } from '@angular/forms';
+import { AbstractControl, FormBuilder, FormControl, FormGroup, ValidationErrors, Validators } from '@angular/forms';
 import { Database } from 'src/app/models/database';
 import { QuizService } from 'src/app/services/quiz.service';
 import { MatRadioChange} from '@angular/material/radio';
 import { Solution } from 'src/app/models/solution';
 import { ConfirmDeleteComponent } from './ConfirmDelete.component';
+import { Observable, of, switchMap } from 'rxjs';
 
 @Component({
     //selector: 'quizTraining',
@@ -64,7 +65,11 @@ export class QuizEditionComponent implements OnInit{
         private fb: FormBuilder,
         private activatedRoute: ActivatedRoute, // Add ActivatedRoute for getting parameters from URL
     ){
-        this.ctlName = this.fb.control('', [Validators.required, Validators.minLength(3)]);
+        this.ctlName = this.fb.control('', {
+            validators: [Validators.required, Validators.minLength(3)],
+            asyncValidators: [this.checkQuizName()],
+            updateOn: 'blur' // or 'change' depending on your preference
+        });
         this.ctlDb = this.fb.control('', [Validators.required]);
         this.ctlIsPublished = this.fb.control(false);
         this.ctlDescription = this.fb.control('', [Validators.required]);
@@ -125,6 +130,11 @@ export class QuizEditionComponent implements OnInit{
                 this.quiz = res;
                 this.updateForm(res!);
                 this.questions = res!.questions;
+                this.questions?.forEach(question => {
+                    if (question.solutions) {
+                        question.solutions = question.solutions.sort((a, b) => a.order! - b.order!);
+                    }
+                });
                 // this.solutions = res!.questions;
                 this.quizService.anyAttempt(this.quiz?.id!).subscribe(
                     res => {
@@ -147,6 +157,7 @@ export class QuizEditionComponent implements OnInit{
         const adjustedStartDate = this.getTimeZone(this.quizEditionForm.value.startDate, true);
         const adjustedFinishDate = this.getTimeZone(this.quizEditionForm.value.finishDate, false);
     
+        console.log("avant");
         if (id > 0) { // if edit
             const editquiz: QuizEdit = {
                 Id: id,
@@ -159,7 +170,9 @@ export class QuizEditionComponent implements OnInit{
                 Finish: adjustedFinishDate,
                 Questions: this.questions || [] // Ensure it's not null or undefined
             };
+            console.log("editquiz Payload:", editquiz);
             this.quizService.updateQuiz(editquiz).subscribe(res => {
+                console.log("apres 1 (edit): "+ res);
                 this.router.navigate(['/quiz']);
             });
         } else { // if new quiz
@@ -173,8 +186,10 @@ export class QuizEditionComponent implements OnInit{
                 Finish: adjustedFinishDate,
                 Questions: this.questions || [] // Ensure it's not null or undefined
             };
+            console.log("Save Quiz Payload:", savequiz);
             this.quizService.postQuiz(savequiz).subscribe(
                 res => {
+                    console.log("apres  2 (save): "+ res);
                     this.router.navigate(['/quiz']);
                 },
                 error => {
@@ -244,22 +259,32 @@ export class QuizEditionComponent implements OnInit{
     // Move Question Up
     OrderUp(qIndex: number): void {
         if (qIndex > 0) {
+            const tempOrder = this.questions![qIndex].order;
+            this.questions![qIndex].order = this.questions![qIndex - 1].order;
+            this.questions![qIndex - 1].order = tempOrder;
+
             const temp = this.questions![qIndex];
             this.questions![qIndex] = this.questions![qIndex - 1];
             this.questions![qIndex - 1] = temp;
-            //temp.order = qIndex+1 
+
+            console.log(this.questions![qIndex].order);
         }
     }
 
     // Move Question Down 
     OrderDown(qIndex: number): void {
         if (qIndex < this.questions!.length - 1) {
+            const tempOrder = this.questions![qIndex].order;
+            this.questions![qIndex].order = this.questions![qIndex + 1].order;
+            this.questions![qIndex + 1].order = tempOrder;
+
             const temp = this.questions![qIndex];
             this.questions![qIndex] = this.questions![qIndex + 1];
             this.questions![qIndex + 1] = temp;
-            //temp.order = qIndex-1 
         }
-    }
+}
+
+
 
     // Move Solution Up
     moveSolutionUp(qIndex: number, sIndex: number): void {
@@ -331,19 +356,41 @@ export class QuizEditionComponent implements OnInit{
         return false;
     }
 
-    checkQuizName(){
-        let id = this.activatedRoute.snapshot.params['id'];
-        console.log(id + " - " + this.quizEditionForm.value.name);
-        this.quizService.nameAvailable(this.quizEditionForm.value.name, id).subscribe(res => {
-            this.isUnique = res; // true = quiz existant
-            console.log(res +" <-------");
-        })
-    }
+    checkQuizName(): (control: AbstractControl) => Observable<ValidationErrors | null> {
+        return (control: AbstractControl): Observable<ValidationErrors | null> => {
+          const id = this.activatedRoute.snapshot.params['id'];
+          const name = control.value;
+      
+          if (!name) {
+            // No need to perform the check if the name is empty
+            return of(null);
+          }
+      
+          return this.quizService.nameAvailable(name, id).pipe(
+            switchMap((res: boolean) => {
+              this.isUnique = res; // true = quiz exists
+              console.log(res + ' <-------');
+      
+              if (!res) {
+                console.log('not unique');
+                return of({ isNotUnique: true });
+              }
+      
+              console.log(this.isUnique);
+              return of(null);
+            })
+          );
+        };
+      }
 
     canSave() {
         if (this.quizEditionForm.invalid) {
             console.log("Invalid form");
             return false;
+        }
+        if(this.ctlTypeQuiz.value == "Test"){
+            if(!this.ctlStartDate.value || !this.ctlFinishDate.value)
+                return false;
         }
         if (this.isUnique == false) {
             console.log("Not unique");
