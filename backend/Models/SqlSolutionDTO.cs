@@ -26,6 +26,18 @@ public class SqlSolutionDTO{
             //this.Error = new string[]{ "Incorrect length for Columns"};
         }
         else{ 
+            /* ====> autre solution 
+             string[] userArray = this.Data.SelectMany(row => row).ToArray();
+                string[] solutionArray = solutionQuery.Data.SelectMany(row => row).ToArray();
+                userArray = userArray.OrderBy(s => s).ToArray();
+                        soluceArray = soluceArray.OrderBy(s => s).ToArray();
+
+                if (!userArray.SequenceEqual(solutionArray))
+                {
+                    errors.Add("Incorrect data");
+                }
+                
+                */
             Dictionary<string, string> columnNameMap = solutionQuery.ColumnNames
                 .Select((name, index) => new { OriginalName = this.ColumnNames[index], NewName = name })
                 .ToDictionary(mapping => mapping.OriginalName, mapping => mapping.NewName);

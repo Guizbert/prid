@@ -101,7 +101,7 @@
 
                         <div *ngFor="let solution of question.solutions; let solutionIdx = index" >
                             <p> Solution {{ solutionIdx + 1}}</p>
-                            <code-editor  [(ngModel)]="solution.sql" [database]="database!" [ngModelOptions]="{standalone: true}"  [disabled]="haveAttempt"></code-editor>
+                            <code-editor #editor [readOnly]="haveAttempt"  [(ngModel)]="solution.sql" [database]="database!" [ngModelOptions]="{standalone: true}"  [disabled]="haveAttempt"></code-editor>
                             <div class="solution-controls">
                                 <button  [disabled]="haveAttempt" mat-icon-button (click)="moveSolutionUp(questionIdx, solutionIdx)" aria-label="Move Up" *ngIf="solutionIdx > 0" matTooltip="Change solution order (up)."matTooltipPosition="left">
                                     <mat-icon>arrow_upward</mat-icon>

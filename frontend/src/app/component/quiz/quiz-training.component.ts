@@ -23,7 +23,7 @@ import { Question } from 'src/app/models/question';
     templateUrl: 'quiz-training.component.html',
 })
 export class QuizTrainingComponent implements OnInit,  AfterViewInit{
-    displayedColumns: string[] = ['name', 'database', 'start', 'finish', 'statut', 'isTest', 'actions'];
+    displayedColumns: string[] = ['name', 'database', 'start', 'finish', 'statut',  'actions'];
     dataSource: MatTableDataSource<Quiz> = new MatTableDataSource();
     private user!: User | undefined ;
     haveAnAttempt: boolean = false;
@@ -77,8 +77,8 @@ export class QuizTrainingComponent implements OnInit,  AfterViewInit{
         // pour check si y a un attempt etc
         this.user = this.authenticationService.currentUser;
         this.isAdmin = this.user?.role == Role.Teacher
-        this.displayedColumns = !this.isTest ? ['name', 'database', 'statut',   'isTest', 'actions']
-                :['name', 'database', 'start', 'finish', 'statut', 'evaluation', 'isTest', 'actions'];
+        this.displayedColumns = !this.isTest ? ['name', 'database', 'statut','actions']
+                :['name', 'database', 'start', 'finish', 'statut', 'evaluation', 'actions'];
     }
 
 

@@ -17,6 +17,7 @@ import { MatRadioChange} from '@angular/material/radio';
 import { Solution } from 'src/app/models/solution';
 import { ConfirmDeleteComponent } from './ConfirmDelete.component';
 import { Observable, of, switchMap } from 'rxjs';
+import { CodeEditorComponent } from '../code-editor/code-editor.component';
 
 @Component({
     //selector: 'quizTraining',
@@ -36,6 +37,7 @@ export class QuizEditionComponent implements OnInit{
     public ctlTypeQuiz!: FormControl;
     public ctlStartDate!:FormControl;
     public ctlFinishDate!:FormControl;
+    @ViewChild("editor") editor!: CodeEditorComponent;
 
 
     public databases: Database[] = [];
@@ -134,6 +136,10 @@ export class QuizEditionComponent implements OnInit{
                 this.quizService.anyAttempt(this.quiz?.id!).subscribe(
                     res => {
                         this.haveAttempt = res;
+                        if(this.haveAttempt){
+                            this.quizEditionForm.disable();
+                            this.editor.readOnly = true;
+                        }
                     }
                 )
                 this.checkQuizName(); 
