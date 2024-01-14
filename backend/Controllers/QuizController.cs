@@ -18,7 +18,6 @@ namespace prid_2324_a12.Controllers;
 [Authorize]
 public class QuizController : ControllerBase
 {
-    //faire function getQuiz (non test) et getTest
 
     private readonly MsnContext _context;
     private readonly IMapper _mapper;
@@ -49,7 +48,6 @@ public class QuizController : ControllerBase
         await UpdateQuizStatusForTeacher(quizzes, userId);
 
         return _mapper.Map<List<QuizDTO>>(quizzes);
-        // return _mapper.Map<List<QuizDTO>>(await _context.Quizzes.ToListAsync());
     }
 
     [Authorized(Role.Teacher, Role.Admin)]
@@ -63,7 +61,6 @@ public class QuizController : ControllerBase
         }
 
         DateTimeOffset today = DateTimeOffset.Now;
-        Console.WriteLine(today);
 
         var user = await _context.Users.FindAsync(userId);
 
@@ -71,7 +68,6 @@ public class QuizController : ControllerBase
         {
             if (user.isTeacher())
             {
-                Console.WriteLine(quiz.IsTest + " <---- ---->" + quiz.Id);
                 if (!quiz.IsTest)
                 {
                     if (quiz.IsPublished)
@@ -83,7 +79,6 @@ public class QuizController : ControllerBase
                 {
                     if (quiz.IsPublished)
                     {
-                        Console.WriteLine(quiz.Finish + " <--    name --->" + quiz.Name);
                         if (quiz.Finish < today)
                         {
                             quiz.Statut = Statut.CLOTURE;
@@ -163,10 +158,7 @@ public class QuizController : ControllerBase
         }
         _mapper.Map<QuizUpdateDTO, Quiz>(editQuiz, quiz);
         
-        //var result = await new QuizValidator(_context).ValidateAsync(quiz); 
 
-        // if(!result.IsValid)
-        //     return BadRequest(result);
         if(!quiz.IsTest){
             quiz.Start = null; quiz.Finish = null;
         }
@@ -357,7 +349,6 @@ public class QuizController : ControllerBase
         var test =  await _context.Quizzes
             .Where(q => q.IsTest == true  && q.IsPublished)
             .Include(q => q.Database)
-            //.Include(q => q.Attempts)
             .OrderBy(q => q.Name)
             .ToListAsync();
 
@@ -380,7 +371,6 @@ public class QuizController : ControllerBase
         var quizzes = await _context.Quizzes
             .Where(q => q.IsTest == false  && q.IsPublished)
             .Include(q => q.Database)
-            //.Include(q => q.Attempts)
             .OrderBy(q => q.Name)
             .ToListAsync();
         // Update quiz status based on attempts
@@ -431,8 +421,6 @@ public class QuizController : ControllerBase
                         quiz.Statut = Statut.EN_COURS;
                 }else
                     quiz.Statut = Statut.PAS_COMMENCE;
-                //Console.WriteLine("statut : " + quiz.Statut);
-
             }
            
             
@@ -527,7 +515,6 @@ public class QuizController : ControllerBase
         return !await _context.Quizzes.AnyAsync(q => q.Id != quizId && q.Name == name);
     }
 
-
     [Authorized(Role.Teacher, Role.Student, Role.Admin)]
     [HttpGet("getAttempt/{quizId}/{userId}/{questionId}")]
     public async Task<ActionResult<AttemptDTO>> GetAttempt(int quizId, int userId, int questionId)
@@ -554,7 +541,6 @@ public class QuizController : ControllerBase
 
         return Ok(attempt); 
     }
-
 
     [Authorized(Role.Teacher, Role.Student, Role.Admin)]
     [HttpPost("newAttempt/{quizId}/{userId}")]
@@ -585,14 +571,11 @@ public class QuizController : ControllerBase
         return Ok(attemptDTO);
     } 
 
-
-
     [Authorized(Role.Teacher, Role.Student, Role.Admin)]
     [HttpGet("getAllDatabase")]
     public async Task<ActionResult<IEnumerable<Database>>> GetAllDatabase(){
         return _mapper.Map<List<Database>>(await _context.Databases.ToListAsync());
     }
-
 
     [Authorized(Role.Teacher, Role.Admin)]
     [HttpDelete("{id}")]
@@ -637,9 +620,4 @@ public class QuizController : ControllerBase
 
         return NoContent();
     }
-
-
-
-
-
 }

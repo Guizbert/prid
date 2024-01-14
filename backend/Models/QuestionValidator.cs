@@ -1,4 +1,3 @@
-// QuestionValidator.cs
 using FluentValidation;
 using System.Linq;
 using prid_2324_a12.Helpers;

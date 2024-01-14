@@ -14,7 +14,6 @@ public class MsnContext : DbContext
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) {
         base.OnConfiguring(optionsBuilder);
         optionsBuilder
-            //.LogTo(Console.WriteLine, LogLevel.Information)
             .EnableSensitiveDataLogging();
     }
     protected override void OnModelCreating(ModelBuilder modelBuilder){
@@ -68,7 +67,6 @@ public class MsnContext : DbContext
             .IsUnique();
         modelBuilder.Entity<Answer>()
             .HasOne(a => a.Attempt);
-        // modelBuilder.Entity<Answer>()
         /***** QUIZZ *****/
         modelBuilder.Entity<Quiz>()
             .Property(q => q.Id)
@@ -78,8 +76,7 @@ public class MsnContext : DbContext
             .HasIndex(q => q.Id)
             .IsUnique();
         
-        // modelBuilder.Entity<Quiz>()
-        //     .HasOne(q => q.Database);
+
         
         modelBuilder.Entity<Quiz>()
             .HasMany(q => q.Questions)
@@ -151,7 +148,6 @@ public class MsnContext : DbContext
                     IsTest = true,
                     Start = DateTimeOffset.Now.AddDays(-1),
                     Finish = DateTimeOffset.Now.AddDays(1),
-                        // Statut= Statut.CLOTURE
                 },
                 new Quiz {
                     Id = 5,

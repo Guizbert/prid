@@ -35,7 +35,6 @@ export class QuestionComponent implements OnInit, AfterViewInit  {
   showSoluce: boolean = false;
   database!: Database;
   isTest: boolean = false;
-  //data a montrer
   dataTable: string[] = []; //data
   columnTable: string[] = []; //colonne
   dataT: string[] =[];        //les deux réunis
@@ -139,9 +138,7 @@ export class QuestionComponent implements OnInit, AfterViewInit  {
 
     // Implement the refresh logic as needed
     console.log("send             <-");
-    //doit faire la création si elle n'existe pas; et la modification si elle existe déjà 
-
-    const cleanedQuery = this.query.replace(/[\r\n]/g, ' ').trim(); // enlève le \n pour éviter les erreurs
+    const cleanedQuery = this.query.replace(/[\r\n]/g, ' ').trim();
     if(cleanedQuery){
       this.questionService.querySent(this.question.id!, cleanedQuery, this.database.name!, newAnswer, this.attempt?.id!).subscribe(
         (data: any) => {

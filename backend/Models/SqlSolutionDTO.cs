@@ -12,7 +12,6 @@ public class SqlSolutionDTO{
 
     public SqlSolutionDTO CheckQueries(SqlSolutionDTO solutionQuery){
         //check col length et data length
-        //Console.WriteLine("data : " + this.Data[1].Length +"\n solution data : "+solutionQuery.Data[1].Length);
         List<string> errors = new();
 
         if(this.Error.Length != 0){
@@ -21,7 +20,6 @@ public class SqlSolutionDTO{
         
         if(this.Data.Length != solutionQuery.Data.Length){
             errors.Add("Incorrect length for rows");
-            //this.Error = new string[]{ "Incorrect length for Rows"};
         }
         if(this.ColumnNames.Length != solutionQuery.ColumnNames.Length){
             errors.Add("Incorrect length for Columns");

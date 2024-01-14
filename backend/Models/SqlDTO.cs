@@ -51,8 +51,6 @@ public class SqlDTO{
         for (int i = 0; i < table.Columns.Count; ++i)
             columns[i] = table.Columns[i].ColumnName;
 
-        Console.WriteLine("Columns: ");
-        Console.WriteLine(string.Join(", ", columns));
 
         // Get data
         string[][] data = new string[table.Rows.Count][];

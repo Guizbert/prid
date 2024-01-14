@@ -21,5 +21,4 @@ public class Answer {
     public Question Question {get;set;} = null!;
     public int QuestionId{get;set;}
 
-    //public virtual ICollection<Attempt> Attempts {get;set;}= new HashSet<Attempt>();
 }

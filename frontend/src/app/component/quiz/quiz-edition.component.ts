@@ -42,7 +42,6 @@ export class QuizEditionComponent implements OnInit{
     quiz?: Quiz | null;
     questions?: Question[] = [];
     database?: Database;
-    //solutions?: Solution[] = [];
     isTest:boolean = false;
     editMode: boolean = false;
     isExistingQuiz: boolean =false;
@@ -52,10 +51,6 @@ export class QuizEditionComponent implements OnInit{
     haveAttempt: boolean = false;
     isUnique: boolean = false;
     newQuestionInProgress: boolean = false;
-
-    //ajout question:
-
-
     constructor(
         public authService: AuthenticationService,
         private quizService: QuizService,
@@ -63,12 +58,12 @@ export class QuizEditionComponent implements OnInit{
         public dialog : MatDialog,
         public router: Router,
         private fb: FormBuilder,
-        private activatedRoute: ActivatedRoute, // Add ActivatedRoute for getting parameters from URL
+        private activatedRoute: ActivatedRoute, 
     ){
         this.ctlName = this.fb.control('', {
             validators: [Validators.required, Validators.minLength(3)],
             asyncValidators: [this.checkQuizName()],
-            updateOn: 'blur' // or 'change' depending on your preference
+            updateOn: 'blur'
         });
         this.ctlDb = this.fb.control('', [Validators.required]);
         this.ctlIsPublished = this.fb.control(false);

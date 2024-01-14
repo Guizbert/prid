@@ -16,7 +16,6 @@ public enum Statut{
     PAS_PUBLIE=6,
 }
 
-//rajouter la property statut et check en backend le statut
 public class Quiz{
     [Key]
     public int Id {get;set;}
@@ -40,11 +39,7 @@ public class Quiz{
     public bool CanInteract{get;set;}
     [NotMapped]
     public bool HaveAttempt{get;set;}
-    // [ForeignKey(nameof(CreatorId))]
-    // public User Creator {get;set;}
-    // public int CreatorId {get;set;}
-    //devrait avoir une seule db ??
-   // public ICollection<Database> Databases {get;set;} = new HashSet<Database>();
+
     [JsonIgnore]
     public ICollection<Question> Questions {get;set;} = new HashSet<Question>();
 

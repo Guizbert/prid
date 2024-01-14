@@ -36,11 +36,6 @@
             <th mat-header-cell *matHeaderCellDef mat-sort-header>evaluation</th>
             <td mat-cell *matCellDef="let quiz"> {{ quiz.getNote }}</td>
         </ng-container>
-        <!-- Test Column -->
-        <ng-container matColumnDef="isTest">
-            <th mat-header-cell *matHeaderCellDef >Is Test</th>
-            <td mat-cell *matCellDef="let quiz">{{ quiz.isTest ? 'Yes' : 'No' }}</td>
-        </ng-container>
 
         
         <ng-container matColumnDef="actions">

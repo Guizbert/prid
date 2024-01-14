@@ -24,9 +24,19 @@ export class User {
         return Role[this.role];
     }
     get display(): string {
-        return `${this.pseudo} (${this.birthDate ? this.age + ' years old' : 'age unknown'})`;
+        return `${this.pseudo} (${this.getrole})`;
     } 
 
+    get getrole(): string{
+        switch(this.role){
+            case Role.Student:
+                return "Student";
+            case Role.Teacher:
+                return "Teacher";
+            default:
+                return "Student";
+        }
+    }
     get age(): number | undefined {
         if (!this.birthDate)
             return undefined;

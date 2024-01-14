@@ -43,25 +43,7 @@ public class UserValidator : AbstractValidator<User>
         
 
 
-        // When(m => m.FirstName.Length>0, () =>{
-        //      RuleFor(m => m.FirstName)
-        //     .MinimumLength(3)
-        //     .MaximumLength(50)
-        //     //    .Matches("^(?![ \t])[A-Za-z]+(?<![ \t])$");
-        //     .Matches(@"^\S.*\S$");
-        // });
        
-
-
-        // When(m => m.LastName.Length>0, () =>{
-        //     RuleFor(m => m.LastName)
-        //     //.Length(3,50)
-        //     .MinimumLength(3)
-        //     .MaximumLength(50)
-        //     //.Matches("^(?![ \t])[A-Za-z]+(?<![ \t])$");
-        //     .Matches(@"^\S.*\S$");
-        // });
-        
         RuleFor(m => m.Role)
             .IsInEnum();    
 

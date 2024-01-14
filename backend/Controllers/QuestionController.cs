@@ -19,7 +19,6 @@ namespace prid_2324_a12.Controllers;
 [Authorize]
 public class QuestionController : ControllerBase
 {
-    //faire function getQuiz (non test) et getTest
     private async Task<User?> GetLoggedMember() => await _context.Users.Where(u => u.Pseudo == User!.Identity!.Name).SingleOrDefaultAsync(); 
 
     private readonly MsnContext _context;
@@ -59,7 +58,6 @@ public class QuestionController : ControllerBase
                 {
                     Id = newAttempt.Id,
                     Start = newAttempt.Start,
-                    //Finish = newAttempt.Finish,
                     UserId = newAttempt.UserId,
                     QuizId = newAttempt.QuizId,
                 };
@@ -78,7 +76,6 @@ public class QuestionController : ControllerBase
                 {
                     Id = newAttempt.Id,
                     Start = newAttempt.Start,
-                    //Finish = newAttempt.Finish,
                     UserId = newAttempt.UserId,
                     QuizId = newAttempt.QuizId,
                 };
@@ -208,7 +205,6 @@ public class QuestionController : ControllerBase
         return Ok(columnNames);
     }
 
-// faire ça dans le model question avec les fonctions du front
     [Authorized(Role.Teacher, Role.Student, Role.Admin)]
     [HttpPost("querySent")]
     public async Task<ActionResult<object>> Sql(SqlDTO sqldto)
@@ -225,8 +221,7 @@ public class QuestionController : ControllerBase
             DbName = sqldto.DbName
         };
         SqlSolutionDTO userQuery = sqldto.ExecuteQuery();
-        // if(userQuery.Error.Length > 0)
-        //     return userQuery;
+
         SqlSolutionDTO solutionQuery = soluceQuery.ExecuteQuery();
         if (userQuery.Data is not null && solutionQuery.Data is not null)
             userQuery.CheckQueries(solutionQuery);
@@ -260,7 +255,6 @@ public class QuestionController : ControllerBase
         }else{
             var answer = await _context.Answers.Where(a => a.AttemptId == sqldto.AttemptId && a.QuestionId == sqldto.QuestionId).OrderByDescending(a => a.TimeStamp).FirstOrDefaultAsync();
             userQuery.TimeStamp = answer.TimeStamp;
-            Console.WriteLine(answer + " <-----------");
         }
         return userQuery;
     }

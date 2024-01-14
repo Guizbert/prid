@@ -34,40 +34,10 @@ public class UsersController : ControllerBase
     }
     private async Task<User?> GetLoggedMember() => await _context.Users.Where(u => u.Pseudo == User!.Identity!.Name).SingleOrDefaultAsync(); 
 
-    //[Authorized(Role.Teacher)] 
     // que les teacher aurant droit a cette fonction (pourra servir pour récup les étudiants et leurs réponses)
     [AllowAnonymous]
     [HttpGet]
     public async Task<ActionResult<IEnumerable<UserDTO>>> GetAll() {
-
-/*
-    pk on utilise des DTO : 
-
-        si on a pas de DTO et qu'on retourne un objet de type user ça fonctionnera mais on aura toutes les données du user (le mdp aussi)
-        donc dto renvoie qu'un sous ensemble de nos données (UserDTO) qui a les mêmes proprietées sauf mdp
-
-        Asp.NET renvoie du json
-
-        si on utilisé que user il faudrait copié toutes les données du user et les renvoyer
-
-        automapper fait une copie automatiquement et créer tout ce dont on a besoin (ça facilite la  vie :) ) merci Map
-
-        2e interets : 
-
-            si on a member et messages
-
-            un message a un auteur, destinataire
-
-            donc quand on charge la db on a des liens dans les 2 sens (avec DTO ça fait un cycle)
-
-            donc sans DTO ça va renvoyer toutes les données (dont mdp) et le message va renvoyer un tableau (l'id, auteur(qui va renvoyer un tableau de user), destinataire(qui va renvoyer un tableau de user))
-            donc il va tourner en boucle et renvoyer une erreur car ça sera trop long
-
-            avec DTO (memberDTO/ messageDTO)
-
-            un member DTO connait la liste des messages envoyés et recu et le messageDTO saura rien
-            (JSON<-Member DTO -> messageDTO)
-*/
 
         return _mapper.Map<List<UserDTO>>(await _context.Users.ToListAsync());
     }
