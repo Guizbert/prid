@@ -43,6 +43,7 @@ export class QuizEditionComponent implements OnInit{
     public databases: Database[] = [];
     quiz?: Quiz | null;
     questions?: Question[] = [];
+    questionsTemp?: Question [] =[];
     database?: Database;
     isTest:boolean = false;
     editMode: boolean = false;
@@ -235,6 +236,7 @@ export class QuizEditionComponent implements OnInit{
         
             dialogRef.afterClosed().subscribe(result => {
             if (result) {
+                this.quiz!.questions =this.questionsTemp; 
                 this.quizService.deleteQuiz(id).subscribe(res => {
                     this.router.navigate(['/quiz']);
                 });
@@ -270,6 +272,7 @@ export class QuizEditionComponent implements OnInit{
 
             console.log(this.questions![qIndex].order);
         }
+        this.questionsTemp = this.questions;
     }
 
     // Move Question Down 
@@ -283,7 +286,8 @@ export class QuizEditionComponent implements OnInit{
             this.questions![qIndex] = this.questions![qIndex + 1];
             this.questions![qIndex + 1] = temp;
         }
-}
+        this.questionsTemp = this.questions;
+    }
 
 
 
@@ -297,6 +301,8 @@ export class QuizEditionComponent implements OnInit{
             this.questions![qIndex].solutions![sIndex].order = sIndex + 1;
             this.questions![qIndex].solutions![sIndex - 1].order = sIndex;
         }
+        this.questionsTemp = this.questions;
+
     }
 
     // Move Solution Down
@@ -309,6 +315,9 @@ export class QuizEditionComponent implements OnInit{
             this.questions![qIndex].solutions![sIndex].order = sIndex + 1;
             this.questions![qIndex].solutions![sIndex + 1].order = sIndex + 2;
         }
+
+        this.questionsTemp = this.questions;
+
     }
 
     newQuestion() {
@@ -319,6 +328,7 @@ export class QuizEditionComponent implements OnInit{
         };
         this.questions!.push(newQuestion);
         this.newQuestionInProgress = true;
+        this.questionsTemp = this.questions;
       }
       
 
@@ -328,18 +338,22 @@ export class QuizEditionComponent implements OnInit{
           sql: ''
         };
         this.questions![questionIdx].solutions!.push(newSolution);
+        this.questionsTemp = this.questions;
       }
       
 
     deleteQuestion(index: number){
-        this.questionsToDelete.push(this.questions![index]);
+        //this.questionsToDelete.push(this.questions![index]);
         // Retire la question du tableau principal
         this.questions!.splice(index, 1);
+        this.questionsTemp = this.questions;
+
     }
     
     deleteSolution(questionIdx:number, solutionIdx:number){
         //this.solutionToDelete.push(this.questions![questionIdx].solutions![solutionIdx]);
         this.questions![questionIdx].solutions!.splice(solutionIdx, 1);
+        this.questionsTemp = this.questions;
     }
 
     onDatabaseChange(database: Database): void {

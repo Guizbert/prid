@@ -118,6 +118,7 @@ public class QuizController : ControllerBase
     [HttpPut("updateQuiz")]
     public async Task<IActionResult> UpdateQuiz(QuizUpdateDTO editQuiz){
         var connectedUser = await GetLoggedMember();
+        
 
         if (connectedUser != null && connectedUser.Role != Role.Teacher)
         {
@@ -129,6 +130,7 @@ public class QuizController : ControllerBase
             return NotFound();
             
         await this.DeleteQuestion(quiz.Questions.ToList());
+        await _context.SaveChangesAsync();
 
 
        foreach (var questionDTO in editQuiz.Questions)
@@ -169,12 +171,6 @@ public class QuizController : ControllerBase
 
     private async Task<bool> DeleteQuestion(List<Question> questions)
     {
-        var connectedUser = await GetLoggedMember();
-
-        if (connectedUser != null && connectedUser.Role != Role.Teacher)
-        {
-            throw new UnauthorizedAccessException("Access Denied");
-        }
         try
         {
             foreach (var question in questions)
@@ -273,9 +269,10 @@ public class QuizController : ControllerBase
         return newQuiz; 
     }
 
-    private async Task<Question> GetExistingQuestion(QuestionSaveDTO questionDTO, int quizId)
+    private async Task<Question?> GetExistingQuestion(QuestionSaveDTO questionDTO, int quizId)
     {
         // Check if the question already exists
+        
         return await _context.Questions
             .FirstOrDefaultAsync(q =>
                 q.QuizId == quizId &&
