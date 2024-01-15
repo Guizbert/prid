@@ -133,8 +133,6 @@ public class QuizController : ControllerBase
       Console.WriteLine("-<-<-<-<-<<->>>->->->-> " + editQuiz.Questions.Count);
         Console.WriteLine("quiz ------------->" + quiz.Id);
         Console.WriteLine(quiz.Questions.Count + " <-------------------------- nb ques bfre");
-        //_context.Questions.RemoveRange(quiz.Questions);
-        //await this.DeleteQuestion(quiz.Questions);
         await _context.SaveChangesAsync();
         Console.WriteLine(quiz.Questions.Count + " <-------------------------- nb ques aftr");
 
