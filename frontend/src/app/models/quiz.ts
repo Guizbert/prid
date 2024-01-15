@@ -79,7 +79,6 @@ export class QuizSave{
 }
 
 export class QuizEdit{
-    Id?:number;
     DatabaseId?: number;
     Name?: string;
     Description?: string;

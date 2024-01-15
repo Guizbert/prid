@@ -160,35 +160,26 @@ export class QuizEditionComponent implements OnInit{
         const adjustedFinishDate = this.getTimeZone(this.quizEditionForm.value.finishDate, false);
     
         console.log("avant");
-        if (id > 0) { // if edit
-            const editquiz: QuizEdit = {
-                Id: id,
-                DatabaseId: this.quizEditionForm.value.db.id,
-                Name: this.quizEditionForm.value.name,
-                Description: this.quizEditionForm.value.description,
-                IsPublished: this.quizEditionForm.value.isPublished,
-                IsTest: this.isTest,
-                Start: adjustedStartDate,
-                Finish: adjustedFinishDate,
-                Questions: this.questions || [] // Ensure it's not null or undefined
-            };
-            console.log("editquiz Payload:", editquiz);
-            this.quizService.updateQuiz(editquiz).subscribe(res => {
-                console.log("apres 1 (edit): "+ res);
-                this.router.navigate(['/quiz']);
-            });
-        } else { // if new quiz
-            const savequiz: QuizSave = {
-                DatabaseId: this.quizEditionForm.value.db.id,
-                Name: this.quizEditionForm.value.name,
-                Description: this.quizEditionForm.value.description,
-                IsPublished: this.quizEditionForm.value.isPublished,
-                IsTest: this.isTest,
-                Start: adjustedStartDate,
-                Finish: adjustedFinishDate,
-                Questions: this.questions || [] // Ensure it's not null or undefined
-            };
-            console.log("Save Quiz Payload:", savequiz);
+    // if new quiz
+        const savequiz: QuizSave = {
+            DatabaseId: this.quizEditionForm.value.db.id,
+            Name: this.quizEditionForm.value.name,
+            Description: this.quizEditionForm.value.description,
+            IsPublished: this.quizEditionForm.value.isPublished,
+            IsTest: this.isTest,
+            Start: adjustedStartDate,
+            Finish: adjustedFinishDate,
+            Questions: this.questions || [] // Ensure it's not null or undefined
+        };
+        console.log("edit Quiz Payload:", savequiz);
+        if(id > 0){
+            this.quizService.updateQuiz(id, savequiz).subscribe(
+                res => {
+                    this.router.navigate(['/quiz']);
+                }
+            )
+        }else{
+             console.log("Save Quiz Payload:", savequiz);
             this.quizService.postQuiz(savequiz).subscribe(
                 res => {
                     console.log("apres  2 (save): "+ res);
@@ -199,6 +190,8 @@ export class QuizEditionComponent implements OnInit{
                 }
             );
         }
+       
+    
     }
     getTimeZone(date1: Date | string, isStart: boolean): Date | undefined { // idée vient de Kenji
         console.log(date1);
@@ -236,7 +229,6 @@ export class QuizEditionComponent implements OnInit{
         
             dialogRef.afterClosed().subscribe(result => {
             if (result) {
-                this.quiz!.questions =this.questionsTemp; 
                 this.quizService.deleteQuiz(id).subscribe(res => {
                     this.router.navigate(['/quiz']);
                 });

@@ -115,51 +115,44 @@ public class QuizController : ControllerBase
         return _mapper.Map<QuizDTO>(quiz);
     }
 
-    [HttpPut("updateQuiz")]
-    public async Task<IActionResult> UpdateQuiz(QuizUpdateDTO editQuiz){
+    [AllowAnonymous]
+    [HttpPut("updateQuiz/{id}")]
+    public async Task<IActionResult> UpdateQuiz(int id, QuizSaveDTO editQuiz){
         var connectedUser = await GetLoggedMember();
-        
-
-        if (connectedUser != null && connectedUser.Role != Role.Teacher)
+        if (connectedUser!.Role != Role.Teacher)
         {
             return BadRequest("Access Denied");
         }
-        var quiz = await _context.Quizzes.FindAsync(editQuiz.Id);
+        var quiz = await _context.Quizzes
+        .Include(q => q.Questions.OrderBy(q => q.Order))
+            .ThenInclude(qu => qu.Solutions.OrderBy(s => s.Order))
+        .FirstOrDefaultAsync(q => q.Id == id);
+     
+        if (quiz == null) 
+             return NotFound();
+      Console.WriteLine("-<-<-<-<-<<->>>->->->-> " + editQuiz.Questions.Count);
+        Console.WriteLine("quiz ------------->" + quiz.Id);
+        Console.WriteLine(quiz.Questions.Count + " <-------------------------- nb ques bfre");
+        //_context.Questions.RemoveRange(quiz.Questions);
+        //await this.DeleteQuestion(quiz.Questions);
+        await _context.SaveChangesAsync();
+        Console.WriteLine(quiz.Questions.Count + " <-------------------------- nb ques aftr");
+
+        var newquestions = editQuiz.Questions.Select(q => {
+            var qu = _mapper.Map<Question>(q);
+            qu.QuizId = quiz.Id;
+            qu.Solutions = q.Solutions.Select(solutionDTO => 
+                _mapper.Map<Solution>(solutionDTO)).ToList();
+            return qu;
+
+        }).ToList();
        
-        if (quiz == null)
-            return NotFound();
-            
-        await this.DeleteQuestion(quiz.Questions.ToList());
+        quiz.Questions = newquestions;
+       
         await _context.SaveChangesAsync();
 
-
-       foreach (var questionDTO in editQuiz.Questions)
-        {
-            //vérif si existe
-            var existingQuestion = await GetExistingQuestion(questionDTO, quiz.Id);
-
-            if (existingQuestion == null)
-            {
-                existingQuestion = await SaveQuestion(questionDTO, quiz.Id);
-
-                if (existingQuestion == null)
-                {
-                    // Handle error or return appropriate response
-                    return BadRequest("Failed to save a question.");
-                }
-            }
-
-            foreach (var solutionDTO in questionDTO.Solutions)
-            {
-                if (!await SaveSolution(solutionDTO, existingQuestion.Id))
-                {
-                    // Handle error or return appropriate response
-                    return BadRequest("Failed to save a solution.");
-                }
-            }
-        }
-        _mapper.Map<QuizUpdateDTO, Quiz>(editQuiz, quiz);
-        
+        _mapper.Map<QuizSaveDTO, Quiz>(editQuiz, quiz);
+    
 
         if(!quiz.IsTest){
             quiz.Start = null; quiz.Finish = null;
@@ -169,19 +162,29 @@ public class QuizController : ControllerBase
         return NoContent();
     }
 
-    private async Task<bool> DeleteQuestion(List<Question> questions)
+    private async Task<bool> DeleteQuestion(ICollection<Question> questions)
     {
         try
         {
-            foreach (var question in questions)
+            // Create a copy of the questions collection to avoid modification during enumeration
+            var questionsCopy = new List<Question>(questions);
+
+            foreach (var question in questionsCopy)
             {
                 // Delete all solutions with the question
                 _context.Solutions.RemoveRange(question.Solutions);
+                Console.WriteLine("delete 1 ");
+                await _context.SaveChangesAsync();
 
                 // Delete the question
                 _context.Questions.Remove(question);
+                Console.WriteLine("delete 2 ");
+                await _context.SaveChangesAsync();
             }
-            //save
+
+            Console.WriteLine(questions.Count);
+            // Save changes after all deletions
+            Console.WriteLine("delete 3 ");
             await _context.SaveChangesAsync();
 
             return true; // Return true if deletion is done
@@ -191,6 +194,7 @@ public class QuizController : ControllerBase
             return false; // Return false if deletion fails
         }
     }
+
 
 
 

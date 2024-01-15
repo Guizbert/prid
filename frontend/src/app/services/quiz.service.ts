@@ -79,8 +79,8 @@ export class QuizService{
         return this.http.post<QuizSave>(`${this.baseUrl}api/quiz/postQuiz`, savequiz);
     }
 
-    updateQuiz(quiz:QuizEdit){
-        return this.http.put<QuizEdit>(`${this.baseUrl}api/quiz/updateQuiz`,quiz);
+    updateQuiz(id: number, quiz:QuizSave){
+        return this.http.put<QuizSave>(`${this.baseUrl}api/quiz/updateQuiz/${id}`,quiz);
     }
     
     deleteQuiz(quizId: number){
