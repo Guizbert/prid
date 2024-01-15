@@ -25,7 +25,9 @@ Run `ng e2e` to execute the end-to-end tests via a platform of your choice. To u
 ## Further help
 
 To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI README](https://github.com/angular/angular-cli/blob/master/README.md).
+## ajout du signup
 
+## je n'ai pas implémenter le fait qu'on puisse edit un quiz de type training si il contient un attempt. Je trouvais ça plus logique
 ## user :
 - pseudo : ben;   mdp : ben  ; Role : Teacher
 - pseudo : bruno; mdp : bruno; Role : Teacher
