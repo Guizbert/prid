@@ -68,5 +68,9 @@ export class QuestionService{
         return this.http.get<any[]>(`${this.baseUrl}api/question/NameAvailable/${name}`); 
     }
 
+    getAnswersFromUser(quizId: number, userId: number){
+        return this.http.get<any[]>(`${this.baseUrl}api/question/getAnswersFromUser/${quizId}/${userId}`); 
+    }
+
   
 }

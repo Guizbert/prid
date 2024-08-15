@@ -5,6 +5,7 @@ import { RestrictedComponent } from '../component/restricted/restricted.componen
 import { LoginComponent } from '../component/login/login.component';
 import { SignUpComponent } from '../component/signup/signup.component';
 import { QuizComponent } from '../component/quiz/quiz.component';
+import { Exam1 } from '../component/exam1/exam1.component';
 import { UnknownComponent } from '../component/unknown/unknown.component';
 import { AuthGuard } from '../services/auth.guard';
 import { Role } from '../models/user';
@@ -16,6 +17,12 @@ const appRoutes: Routes = [
     {
         path: 'users',
         component: UserListComponent,
+        canActivate: [AuthGuard],
+        data: { roles: [Role.Teacher] }
+    },
+    {
+        path: 'exam',
+        component: Exam1,
         canActivate: [AuthGuard],
         data: { roles: [Role.Teacher] }
     },

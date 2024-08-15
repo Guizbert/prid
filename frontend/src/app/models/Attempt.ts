@@ -13,7 +13,7 @@ export class Attempt{
     Finish?: Date;
     userId?:number;
     quizId?: number;
-    answer?: Answer[];
+    answers?: Answer[];
 
     get display(): string {
         return `${this.id}`;

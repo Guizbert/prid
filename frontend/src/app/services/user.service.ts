@@ -15,4 +15,9 @@ export class UserService {
             map(res => plainToInstance(User, res))
         );
     }
+    getStudent(): Observable<User[]> {
+        return this.http.get<any[]>(`${this.baseUrl}api/users/getStudent`).pipe(
+            map(res => plainToInstance(User, res))
+        );
+    }
 }

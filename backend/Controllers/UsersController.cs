@@ -41,6 +41,13 @@ public class UsersController : ControllerBase
 
         return _mapper.Map<List<UserDTO>>(await _context.Users.ToListAsync());
     }
+    
+    [AllowAnonymous]
+    [HttpGet("getStudent")]
+    public async Task<ActionResult<IEnumerable<UserDTO>>> GetStudent() {
+
+        return _mapper.Map<List<UserDTO>>(await _context.Users.Where(u => u.Role== Role.Student).ToListAsync());
+    }
 
     [HttpGet("{id}")]
     public async Task<ActionResult<UserDTO>> GetOne(int id) {

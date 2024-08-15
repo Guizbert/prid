@@ -1,0 +1,39 @@
+<p> exam 1 page {{ connectedUser!.pseudo }} is a {{ connectedUser!.getrole}}</p>
+
+
+
+<!-- 1- take every student existing in the db  -->
+<div class="row">
+    <div class="col-sm-4">
+        <p>Chose a student : </p>
+        <mat-select (selectionChange)="onStudentChange($event.value)" style="background-color: black;">
+            <mat-option *ngFor="let user of listStudent" [value]="user">
+                <div *ngIf="user.getrole == 'Student'">
+                     {{user.pseudo}}
+                </div>
+            </mat-option>
+        </mat-select>
+    </div>
+</div>
+
+
+
+<!-- 2- once we chose a student, we've to get every quiz where the student have an attempt -->
+<div class="row" *ngIf="selectedStudent">
+    <div class="col-sm-4">
+        <p>Chose a quiz : </p>
+        <mat-select (selectionChange)="onQuizChange($event.value)" style="background-color: black;">
+            <mat-option *ngFor="let quiz of listQuiz" [value]="quiz">
+                {{quiz.name}}
+            </mat-option>
+        </mat-select>
+    </div>
+    
+
+<!-- 3- see every answer of the student on the quiz (every answer.) and we can either change it or delete it -->
+    <div *ngFor="let answer of listAnswer">
+        <p> {{answer.sql}}</p>
+        <button mat-stroked-button  (click)="delete()"  style="color: rgb(136, 105, 133);" class="btn btn-secondary" rows="4"><i class="material-icons">delete</i></button>
+    </div>
+</div>
+

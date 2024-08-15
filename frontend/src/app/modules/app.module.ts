@@ -18,6 +18,7 @@ import { QuizTrainingComponent } from '../component/quiz/quiz-training.component
 import { QuizTeacherComponent}  from '../component/quiz/quiz-teacher.component';
 import { QuestionComponent } from '../component/question/question.component';
 import { CodeEditorComponent } from '../component/code-editor/code-editor.component';
+import { Exam1 } from '../component/exam1/exam1.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { SharedModule } from './shared.module';
 import { MAT_DATE_FORMATS, MAT_DATE_LOCALE } from '@angular/material/core';
@@ -40,6 +41,7 @@ import { TruncatePipe } from '../helpers/truncatePipe ';
         ConfirmDeleteComponent,
         QuizEditionComponent,
         QuestionComponent,
+        Exam1,
         UnknownComponent,
         CodeEditorComponent,
         RestrictedComponent,

@@ -153,6 +153,7 @@ public class QuestionController : ControllerBase
     }
 
 
+    [AllowAnonymous]
     [Authorized(Role.Teacher, Role.Student, Role.Admin)]
     [HttpGet("getdata/{dbname}")]
     public async Task<ActionResult<Dictionary<string, List<string>>>> getdata(string dbname){
@@ -291,5 +292,23 @@ public class QuestionController : ControllerBase
         var question = _context.Questions.Where(q=> q.Body == body);
         if(question!= null) return true;
         return false;
+    }
+
+
+    [AllowAnonymous]
+    [HttpGet("getAnswersFromUser/{quizId}/{userId}")]
+    public async  Task<ActionResult<Attempt[]?>> getAnswersFromUser(int quizId, int userId){
+        var connectedUser = await GetLoggedMember();
+
+        if (connectedUser != null && connectedUser.Role != Role.Teacher)
+        {
+            throw new UnauthorizedAccessException("Access Denied");
+        }
+        
+       var attempts =  _context.Attempts
+                                .Include(a => a.Answers)
+                                .Where(a => a.QuizId == quizId && a.UserId == userId);
+       
+       return Ok(attempts);
     }
 }
